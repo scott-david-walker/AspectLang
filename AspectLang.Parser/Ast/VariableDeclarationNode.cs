@@ -1,3 +1,5 @@
+using AspectLang.Parser.Compiler;
+
 namespace AspectLang.Parser.Ast;
 
 public class VariableDeclarationNode : INode
@@ -7,9 +9,9 @@ public class VariableDeclarationNode : INode
     {
         Name = token.Literal;
     }
-
-    public string AsStringValue()
+    
+    public void Accept(IVisitor visitor)
     {
-        return Name;
+        
     }
 }

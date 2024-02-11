@@ -164,7 +164,6 @@ public class ParserTests
         leftInfix!.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
         leftInfix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
         leftInfix.Operator.Should().Be("+");
-
         infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
     }
 

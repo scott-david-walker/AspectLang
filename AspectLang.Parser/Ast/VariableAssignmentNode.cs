@@ -1,3 +1,5 @@
+using AspectLang.Parser.Compiler;
+
 namespace AspectLang.Parser.Ast;
 
 public class VariableAssignmentNode : INode
@@ -9,9 +11,10 @@ public class VariableAssignmentNode : INode
     }
     public VariableDeclarationNode VariableDeclarationNode { get; }
     public IExpression Expression { get; }
+    
 
-    public string AsStringValue()
+    public void Accept(IVisitor visitor)
     {
-        return "";
+        
     }
 }

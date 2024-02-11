@@ -1,3 +1,5 @@
+using AspectLang.Parser.Compiler;
+
 namespace AspectLang.Parser.Ast;
 
 public class ValueExpressionNode : IExpression
@@ -19,9 +21,9 @@ public class ValueExpressionNode : IExpression
     {
         return this;
     }
-
-    public string AsStringValue()
+    
+    public void Accept(IVisitor visitor)
     {
-        return "";
+        
     }
 }

@@ -1,4 +1,5 @@
 using System.Text;
+using AspectLang.Parser.Compiler;
 
 namespace AspectLang.Parser.Ast.ExpressionTypes;
 
@@ -11,5 +12,10 @@ public class InfixExpression : IExpression
     public INode ExpressionNode()
     {
         return this;
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }

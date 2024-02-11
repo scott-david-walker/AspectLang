@@ -1,4 +1,4 @@
-namespace AspectLang.Parser.Compiler;
+namespace AspectLang.Parser.Compiler.ReturnableObjects;
 
 public class IntegerReturnableObject : IReturnableObject
 {

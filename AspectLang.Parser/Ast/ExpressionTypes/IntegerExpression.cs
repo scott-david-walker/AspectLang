@@ -1,3 +1,5 @@
+using AspectLang.Parser.Compiler;
+
 namespace AspectLang.Parser.Ast.ExpressionTypes;
 
 public class IntegerExpression(int value) : IExpression
@@ -7,5 +9,10 @@ public class IntegerExpression(int value) : IExpression
     public INode ExpressionNode()
     {
         return this;
+    }
+
+    public void Accept(IVisitor visitor)
+    {
+        visitor.Visit(this);
     }
 }

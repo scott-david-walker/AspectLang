@@ -1,51 +1,49 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
+using AspectLang.Parser.Compiler.ReturnableObjects;
 
 namespace AspectLang.Parser.Compiler;
 
-public class Compiler
+public class Compiler : IVisitor
 {
     public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
     public void Compile(INode node)
     {
-        if (node is ProgramNode programNode)
-        {
-            foreach (var statement in programNode.StatementNodes)
-            {
-                Compile(statement);
-            }
-        }
+        node.Accept(this);
+    }
+    
+    public void Visit(IntegerExpression expression)
+    {
+        var val = expression.Value;
+        Emit(OpCode.Constant, [AddConstant(new IntegerReturnableObject(val))]);
+    }
 
-        if (node is ExpressionStatement expressionStatement)
+    public void Visit(ProgramNode programNode)
+    {
+        foreach (var statement in programNode.StatementNodes)
         {
-            Compile(expressionStatement.Expression);
-        }
-
-        if (node is VariableAssignmentNode valNode)
-        {
-            Compile(valNode);
-        }
-
-        if (node is InfixExpression infixNode)
-        {
-            Compile(infixNode.Left);
-            Compile(infixNode.Right);
-            switch (infixNode.Operator)
-            {
-                case "+":
-                    Emit(OpCode.Sum);
-                    break;
-            }
-        }
-        
-        if (node is IntegerExpression integerExpression)
-        {
-            var val = integerExpression.Value;
-            Emit(OpCode.Constant, [AddConstant(new IntegerReturnableObject(val))]);
+            statement.Accept(this);
         }
     }
 
+    public void Visit(ExpressionStatement expression)
+    {
+        expression.Expression.Accept(this);
+    }
+
+    public void Visit(InfixExpression expression)
+    {
+        expression.Left.Accept(this);
+        expression.Right.Accept(this);
+        switch (expression.Operator)
+        {
+            case "+":
+                Emit(OpCode.Sum);
+                break;
+        }
+    }
+    
     private void Emit(OpCode opcode)
     {
         Emit(opcode, []);
@@ -60,7 +58,7 @@ public class Compiler
         return position;
     }
 
-    private Instruction CreateInstruction(OpCode opCode, List<int> operands)
+    private static Instruction CreateInstruction(OpCode opCode, List<int> operands)
     {
         if (!operands.Any())
         {
