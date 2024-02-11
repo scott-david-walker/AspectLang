@@ -11,6 +11,8 @@ public class Compiler : IVisitor
     public void Compile(INode node)
     {
         node.Accept(this);
+        
+        // Should do a conversion to some byte code format tbd
     }
     
     public void Visit(IntegerExpression expression)
