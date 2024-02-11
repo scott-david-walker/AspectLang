@@ -1,0 +1,183 @@
+using AspectLang.Parser;
+using AspectLang.Parser.Ast;
+using AspectLang.Parser.Ast.ExpressionTypes;
+using AspectLang.Parser.Compiler;
+using AspectLang.Parser.VirtualMachine;
+using FluentAssertions;
+
+namespace ParserTests;
+
+public class ParserTests
+{
+    [Fact]
+    public void CanParseValStatement()
+    {
+        var lexer = new Lexer("val x = 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<VariableAssignmentNode>();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.VariableDeclarationNode.Name.Should().Be("x");
+        node!.Expression.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+    }
+
+    [Fact]
+    public void WhenNextStatementIsNotAssignment_ShouldReturnError()
+    {
+        var lexer = new Lexer("val x 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().NotBeEmpty();
+        var error = result.Errors[0];
+        error.ColumnPosition.Should().Be(6);
+        error.LineNumber.Should().Be(0);
+        error.Message.Should().Be("Expected = but received 5");
+    }
+    
+    [Fact]
+    public void WhenNextStatementIsNotIdentifier_ShouldReturnError()
+    {
+        var lexer = new Lexer("val 5 = 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().NotBeEmpty();
+        var error = result.Errors[0];
+        error.ColumnPosition.Should().Be(4);
+        error.LineNumber.Should().Be(0);
+        error.Message.Should().Be("Expected identifier but received 5");
+    }
+
+    [Fact]
+    public void ValStatementRighthandSideIsExpression()
+    {
+        var lexer = new Lexer("val x = 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<IntegerExpression>()
+            .Which.Value.Should()
+            .Be(5);
+    }
+    
+    [Fact]
+    public void ExpressionCanHandlePlus()
+    {
+        var lexer = new Lexer("val x = 5 + 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("+"); 
+        infix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+    }
+    
+    [Fact]
+    public void ExpressionCanHandleMinus()
+    {
+        var lexer = new Lexer("val x = 5 - 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("-"); 
+        infix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+    }
+    
+    
+    [Fact]
+    public void ExpressionCanHandleTimes()
+    {
+        var lexer = new Lexer("val x = 5 * 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("*"); 
+        infix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+    }
+    
+    
+    [Fact]
+    public void ExpressionCanHandleDivide()
+    {
+        var lexer = new Lexer("val x = 5 / 5;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("/"); 
+        infix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+    }
+    
+    [Fact]
+    public void ExpressionCanHandleOrderOfOperations()
+    {
+        var lexer = new Lexer("val x = 5 + 5 / 10;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var leftInfix = node.Expression as InfixExpression;
+        leftInfix!.Operator.Should().Be("+"); 
+        leftInfix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        leftInfix.Right.Should().BeAssignableTo<InfixExpression>();
+
+        var rightInfix = leftInfix.Right as InfixExpression;
+        rightInfix!.Operator.Should().Be("/");
+        rightInfix.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        rightInfix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
+    }
+    
+    [Fact]
+    public void ExpressionCanHandleOrderOfOperationsWithBrackets()
+    {
+        var lexer = new Lexer("val x = (5 + 5) / 10;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("/"); 
+        infix.Left.Should().BeAssignableTo<InfixExpression>();
+        var leftInfix = infix.Left as InfixExpression;
+        leftInfix!.Left.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        leftInfix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        leftInfix.Operator.Should().Be("+");
+
+        infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
+    }
+
+    [Fact]
+    public void T()
+    {
+        var lexer = new Lexer("5 + 6");
+        var parser = new Parser(lexer);
+        var result = parser.Parse(); 
+        var compiler = new Compiler();
+        compiler.Compile(result.ProgramNode);
+
+        var vm = new Vm(compiler.Instructions, compiler.Constants);
+        vm.Run();
+    }
+}
