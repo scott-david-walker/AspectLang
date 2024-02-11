@@ -178,6 +178,6 @@ public class ParserTests
         compiler.Compile(result.ProgramNode);
 
         var vm = new Vm(compiler.Instructions, compiler.Constants);
-        vm.Run();
+        var res = vm.Run();
     }
 }

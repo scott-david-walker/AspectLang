@@ -4,10 +4,16 @@ namespace AspectLang.Parser.VirtualMachine;
 
 public class Vm
 {
-    private readonly List<byte> _instructions;
+    private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
     private readonly Stack<IReturnableObject> _stack = new();
-    public Vm(List<byte> instructions, List<IReturnableObject> constants)
+
+    private readonly Dictionary<OpCode, IOperation> _operations = new()
+    {
+        { OpCode.Constant, new ReadConstantOperation() },
+        { OpCode.Sum, new AddOperation() }
+    };
+    public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
         _instructions = instructions;
         _constants = constants;
@@ -15,39 +21,29 @@ public class Vm
 
     public IReturnableObject Run()
     {
-        for (var i = 0; i < _instructions.Count; i++)
+        foreach (var instruction in _instructions)
         {
-            var opcode = _instructions[i].Find();
-
-            switch (opcode.Code)
+            if (_operations.TryGetValue(instruction.OpCode, out var op))
             {
-                case OpCode.Constant:
-                    var constantIndex = BitConverter.ToInt16(_instructions.ToArray(), startIndex: i + 1);
-                    i += 2; // constants are two bytes wide
-                    PushToStack(_constants[constantIndex]);
-                    break;
-                
-                case OpCode.Sum:
-                    var right = _stack.Pop();
-                    var left = _stack.Pop();
-
-                    var rightInt = (IntegerReturnableObject)right;
-                    var leftInt = (IntegerReturnableObject)left;
-
-                    var ret = new IntegerReturnableObject(rightInt.Value + leftInt.Value);
-                    
-                    PushToStack(ret);
-                    break;
+                op.Execute(this, instruction.Operands);
             }
         }
 
-        var p = _stack.Pop() as IntegerReturnableObject;
-        Console.WriteLine(p.Value);
-        return null;
+        return _stack.Pop();
     }
 
-    private void PushToStack(IReturnableObject returnableObject)
+    public void Push(IReturnableObject returnableObject)
     {
         _stack.Push(returnableObject);
+    }
+
+    public IReturnableObject Pop()
+    {
+        return _stack.Pop();
+    }
+
+    public IReturnableObject GetConstant(int index)
+    {
+        return _constants[index];
     }
 }

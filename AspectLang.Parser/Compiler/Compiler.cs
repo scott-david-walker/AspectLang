@@ -5,7 +5,7 @@ namespace AspectLang.Parser.Compiler;
 
 public class Compiler
 {
-    public List<byte> Instructions { get; } = [];
+    public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
     public void Compile(INode node)
     {
@@ -17,9 +17,9 @@ public class Compiler
             }
         }
 
-        if (node is ExpressionStatement statement2)
+        if (node is ExpressionStatement expressionStatement)
         {
-            Compile(statement2.Expression);
+            Compile(expressionStatement.Expression);
         }
 
         if (node is VariableAssignmentNode valNode)
@@ -51,20 +51,52 @@ public class Compiler
         Emit(opcode, []);
     }
     
-    private int AddInstructions(IEnumerable<byte> instructions)
-    {
-        var pos = Instructions.Count;
-        Instructions.AddRange(instructions);
-        return pos;
-    }
-    
     private int Emit(OpCode opcode, List<int> operands)
     {
-        var instructions = ByteCode.Create(opcode, operands);
-        var position =  AddInstructions(instructions);
+        //var instructions = ByteCode.Create(opcode, operands);
+        var instruction = CreateInstruction(opcode, operands);
+        var position = AddInstructions(instruction);
         //SetLastInstruction((byte)opcode, position);
         return position;
     }
+
+    private Instruction CreateInstruction(OpCode opCode, List<int> operands)
+    {
+        if (!operands.Any())
+        {
+            return new() { OpCode = opCode };
+        }
+
+        if (opCode == OpCode.Constant)
+        {
+            if (operands.Count > 1)
+            {
+                // We only ever expect a constant to point to an index. In reality, the length should only be one..
+                throw new("Expected opcode to contain index of constant. Length too long");
+            }
+            var operand = new Operand
+            {
+                OperandType = OperandType.Pointer,
+                Reference = operands[0]
+            };
+            return new()
+            {
+                OpCode = opCode,
+                Operands = [operand]
+            };
+        }
+
+        return null; //TODO
+    }
+    
+    private int AddInstructions(Instruction instruction)
+    {
+        var pos = Instructions.Count;
+        Instructions.Add(instruction);
+        return pos;
+    }
+    
+
     
     private int AddConstant(IReturnableObject obj)
     {

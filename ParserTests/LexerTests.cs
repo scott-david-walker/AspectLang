@@ -41,6 +41,12 @@ public class LexerTests
     [InlineData("x1", TokenType.Identifier)]
     [InlineData("x_1", TokenType.Identifier)]
     [InlineData(";", TokenType.SemiColon)]
+    [InlineData("*", TokenType.Asterisk)]
+    [InlineData("+", TokenType.Plus)]
+    [InlineData("-", TokenType.Minus)]
+    [InlineData("/", TokenType.Slash)]
+    [InlineData("(", TokenType.LeftParen)]
+    [InlineData(")", TokenType.RightParen)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);
