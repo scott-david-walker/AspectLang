@@ -39,4 +39,21 @@ public class FlowTests
         var res = vm.Run();
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);
     }
+
+    [Theory]
+    [InlineData("TestFiles/add.aspect", 15)]
+    public async Task RunTestFiles(string file, int expectedResult)
+    {
+        var source = await File.ReadAllTextAsync(file);
+        var lexer = new Lexer(source);
+        var parser = new Parser(lexer);
+        var result = parser.Parse(); 
+        var compiler = new Compiler();
+        compiler.Compile(result.ProgramNode);
+
+        var vm = new Vm(compiler.Instructions, compiler.Constants);
+        var res = vm.Run();
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);
+        
+    }
 }
