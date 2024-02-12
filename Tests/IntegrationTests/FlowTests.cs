@@ -23,6 +23,10 @@ public class FlowTests
     [InlineData("2 + 5 * 100 / 10", 52)]
     [InlineData("(2 + 5) * 100 / 10", 70)]
     [InlineData("(2 + (5 + 5)) * 100 / 10", 120)]
+    [InlineData("-5 + 6", 1)]
+    [InlineData("-5 * -1", 5)]
+    [InlineData("5 * -1", -5)]
+
     public void SimpleMaths(string source, int expectedResult)
     {
         var lexer = new Lexer(source);

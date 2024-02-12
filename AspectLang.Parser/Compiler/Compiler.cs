@@ -54,7 +54,18 @@ public class Compiler : IVisitor
                 break;
         }
     }
-    
+
+    public void Visit(PrefixExpression expression)
+    {
+        expression.Right.Accept(this);
+        switch (expression.Operator)
+        {
+            case "-":
+                Emit(OpCode.Minus);
+                break;
+        }
+    }
+
     private void Emit(OpCode opcode)
     {
         Emit(opcode, []);

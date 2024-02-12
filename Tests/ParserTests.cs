@@ -164,4 +164,19 @@ public class ParserTests
         leftInfix.Operator.Should().Be("+");
         infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
     }
+    
+    [Fact]
+    public void Minus()
+    {
+        var lexer = new Lexer("-20");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<PrefixExpression>();
+
+        var prefix = node.Expression as PrefixExpression;
+        prefix!.Operator.Should().Be("-");
+        prefix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(20);
+    }
 }

@@ -30,6 +30,7 @@ public class Parser
     {
         _prefixParseFunctions.Add(TokenType.Integer, ParseIntegerExpression);
         _prefixParseFunctions.Add(TokenType.LeftParen, ParseGroupedExpression);
+        _prefixParseFunctions.Add(TokenType.Minus, ParsePrefixExpression);
 
         _infixParseFunctions.Add(TokenType.Plus, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.Minus, ParseInfixExpression);
@@ -42,6 +43,14 @@ public class Parser
         _lexer = lexer;
         GetNext();
         GetNext();
+    }
+
+    private IExpression ParsePrefixExpression()
+    { 
+        var expression = new PrefixExpression(_currentToken.Literal);
+        GetNext();
+        expression.Right = ParseExpression(Priority.Prefix);
+        return expression;
     }
 
     private IExpression ParseGroupedExpression()
