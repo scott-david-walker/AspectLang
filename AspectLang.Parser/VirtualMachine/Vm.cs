@@ -16,7 +16,9 @@ public class Vm
         { OpCode.Subtract, new SubtractOperation() },
         { OpCode.Divide, new DivideOperation() },
         { OpCode.Multiply, new MultiplyOperation() },
-        { OpCode.Minus, new MinusOperation() }
+        { OpCode.Minus, new MinusOperation() },
+        { OpCode.True, new TrueOperation() },
+        { OpCode.False, new FalseOperation() },
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
