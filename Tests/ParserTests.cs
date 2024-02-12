@@ -1,8 +1,6 @@
 using AspectLang.Parser;
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
-using AspectLang.Parser.Compiler;
-using AspectLang.Parser.VirtualMachine;
 using FluentAssertions;
 
 namespace ParserTests;
@@ -165,18 +163,5 @@ public class ParserTests
         leftInfix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
         leftInfix.Operator.Should().Be("+");
         infix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
-    }
-
-    [Fact]
-    public void T()
-    {
-        var lexer = new Lexer("5 + 6");
-        var parser = new Parser(lexer);
-        var result = parser.Parse(); 
-        var compiler = new Compiler();
-        compiler.Compile(result.ProgramNode);
-
-        var vm = new Vm(compiler.Instructions, compiler.Constants);
-        var res = vm.Run();
     }
 }

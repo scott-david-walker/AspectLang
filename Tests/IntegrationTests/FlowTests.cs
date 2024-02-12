@@ -1,0 +1,38 @@
+using AspectLang.Parser;
+using AspectLang.Parser.Compiler;
+using AspectLang.Parser.Compiler.ReturnableObjects;
+using AspectLang.Parser.VirtualMachine;
+using FluentAssertions;
+
+namespace ParserTests.IntegrationTests;
+
+public class FlowTests
+{
+    [Theory]
+    [InlineData("5 + 6", 11)]
+    [InlineData("10 + 10", 20)]
+    [InlineData("10 - 10", 0)]
+    [InlineData("6 - 5", 1)]
+    [InlineData("6 / 2", 3)]
+    [InlineData("15 / 3", 5)]
+    [InlineData("15 * 3", 45)]
+    [InlineData("6 * 2", 12)]
+    [InlineData("6 * 5", 30)]
+    [InlineData("6 * 5 / 2", 15)]
+    [InlineData("10 * (10 / 2)", 50)]
+    [InlineData("2 + 5 * 100 / 10", 52)]
+    [InlineData("(2 + 5) * 100 / 10", 70)]
+    [InlineData("(2 + (5 + 5)) * 100 / 10", 120)]
+    public void SimpleMaths(string source, int expectedResult)
+    {
+        var lexer = new Lexer(source);
+        var parser = new Parser(lexer);
+        var result = parser.Parse(); 
+        var compiler = new Compiler();
+        compiler.Compile(result.ProgramNode);
+
+        var vm = new Vm(compiler.Instructions, compiler.Constants);
+        var res = vm.Run();
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);
+    }
+}

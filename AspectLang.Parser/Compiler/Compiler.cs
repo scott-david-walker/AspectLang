@@ -43,6 +43,15 @@ public class Compiler : IVisitor
             case "+":
                 Emit(OpCode.Sum);
                 break;
+            case "-":
+                Emit(OpCode.Subtract);
+                break;
+            case "/":
+                Emit(OpCode.Divide);
+                break;
+            case "*":
+                Emit(OpCode.Multiply);
+                break;
         }
     }
     

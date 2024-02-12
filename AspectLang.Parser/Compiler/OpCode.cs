@@ -5,6 +5,9 @@ public enum OpCode : byte
     Illegal,
     Constant,
     Sum,
+    Subtract,
+    Divide,
+    Multiply
 }
 
 public static class DefinitionExtensions

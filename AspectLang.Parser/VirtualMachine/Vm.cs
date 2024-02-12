@@ -12,7 +12,10 @@ public class Vm
     private readonly Dictionary<OpCode, IOperation> _operations = new()
     {
         { OpCode.Constant, new ReadConstantOperation() },
-        { OpCode.Sum, new AddOperation() }
+        { OpCode.Sum, new AddOperation() },
+        { OpCode.Subtract, new SubtractOperation() },
+        { OpCode.Divide, new DivideOperation() },
+        { OpCode.Multiply, new MultiplyOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
