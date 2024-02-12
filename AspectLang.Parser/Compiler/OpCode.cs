@@ -8,7 +8,9 @@ public enum OpCode : byte
     Subtract,
     Divide,
     Multiply,
-    Minus
+    Minus,
+    True,
+    False
 }
 
 public static class DefinitionExtensions

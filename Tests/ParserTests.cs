@@ -179,4 +179,17 @@ public class ParserTests
         prefix!.Operator.Should().Be("-");
         prefix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(20);
     }
+
+    // [Theory]
+    // [InlineData("true", true)]
+    // [InlineData("false", false)]
+    // public void CanHandleBooleanValues(string source, bool returnValue)
+    // {
+    //     var lexer = new Lexer(source);
+    //     var parser = new Parser(lexer);
+    //     var result = parser.Parse();
+    //     var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+    //     node!.Expression.Should()
+    //         .BeAssignableTo<BooleanExpression>();
+    // }
 }

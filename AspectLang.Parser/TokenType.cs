@@ -20,5 +20,7 @@ public enum TokenType
     Slash,
     Asterisk,
     LeftParen,
-    RightParen
+    RightParen,
+    True,
+    False
 }

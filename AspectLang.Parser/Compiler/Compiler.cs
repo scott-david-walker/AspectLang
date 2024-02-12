@@ -66,6 +66,18 @@ public class Compiler : IVisitor
         }
     }
 
+    public void Visit(BooleanExpression expression)
+    {
+        if (expression.Value)
+        {
+            Emit(OpCode.True);
+        }
+        else
+        {
+            Emit(OpCode.False);
+        }
+    }
+
     private void Emit(OpCode opcode)
     {
         Emit(opcode, []);

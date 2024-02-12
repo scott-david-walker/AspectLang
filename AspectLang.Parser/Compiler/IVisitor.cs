@@ -10,4 +10,5 @@ public interface IVisitor
     void Visit(ExpressionStatement expression);
     void Visit(InfixExpression expression);
     void Visit(PrefixExpression expression);
+    void Visit(BooleanExpression expression);
 }

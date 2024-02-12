@@ -13,7 +13,9 @@ public class Lexer
 
     private Dictionary<string, TokenType> _keywords = new()
     {
-        { "val", TokenType.Val }
+        { "val", TokenType.Val },
+        { "true", TokenType.True },
+        { "false", TokenType.False }
     };
     public Lexer(string source)
     {

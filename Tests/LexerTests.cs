@@ -47,6 +47,8 @@ public class LexerTests
     [InlineData("/", TokenType.Slash)]
     [InlineData("(", TokenType.LeftParen)]
     [InlineData(")", TokenType.RightParen)]
+    [InlineData("true", TokenType.True)]
+    [InlineData("false", TokenType.False)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

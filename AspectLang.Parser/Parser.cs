@@ -31,6 +31,8 @@ public class Parser
         _prefixParseFunctions.Add(TokenType.Integer, ParseIntegerExpression);
         _prefixParseFunctions.Add(TokenType.LeftParen, ParseGroupedExpression);
         _prefixParseFunctions.Add(TokenType.Minus, ParsePrefixExpression);
+        _prefixParseFunctions.Add(TokenType.False, ParseBooleanExpression);
+        _prefixParseFunctions.Add(TokenType.True, ParseBooleanExpression);
 
         _infixParseFunctions.Add(TokenType.Plus, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.Minus, ParseInfixExpression);
@@ -43,6 +45,11 @@ public class Parser
         _lexer = lexer;
         GetNext();
         GetNext();
+    }
+
+    private IExpression ParseBooleanExpression()
+    {
+        return _currentToken.TokenType == TokenType.True ? new (true) : new BooleanExpression(false);
     }
 
     private IExpression ParsePrefixExpression()
