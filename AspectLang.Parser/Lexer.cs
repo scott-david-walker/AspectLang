@@ -65,7 +65,14 @@ public class Lexer
         
         if (_currentChar == '=')
         {
-            token = new("=", _currentLineNumber, _currentColumnNumber, TokenType.Assignment);
+            if (_source[_readPosition] == '=')
+            {
+                token = new("==", _currentLineNumber, _currentColumnNumber, TokenType.Equality);
+            }
+            else
+            {
+                token = new("=", _currentLineNumber, _currentColumnNumber, TokenType.Assignment);
+            }
         }
 
         if (_currentChar == ';')
