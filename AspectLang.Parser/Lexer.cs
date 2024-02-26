@@ -25,7 +25,7 @@ public class Lexer
     }
     
     public Token NextToken()
-     {
+    {
         EatWhitespace();
         if (_currentChar == '\0')
         {
@@ -68,6 +68,7 @@ public class Lexer
             if (_source[_readPosition] == '=')
             {
                 token = new("==", _currentLineNumber, _currentColumnNumber, TokenType.Equality);
+                ReadNextCharacter();
             }
             else
             {

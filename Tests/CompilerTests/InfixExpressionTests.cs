@@ -11,6 +11,7 @@ public class InfixExpressionTests
     [InlineData("-", OpCode.Subtract)]
     [InlineData("/", OpCode.Divide)]
     [InlineData("*", OpCode.Multiply)]
+    [InlineData("==", OpCode.Equality)]
     public void OutputCorrectConstantsAndOperator(string @operator, OpCode opCode)
     {
         var infix = new InfixExpression();

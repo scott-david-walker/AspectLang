@@ -179,6 +179,20 @@ public class ParserTests
         prefix!.Operator.Should().Be("-");
         prefix.Right.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(20);
     }
+    
+    [Fact]
+    public void Equality()
+    {
+        var lexer = new Lexer("20 == 20");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("==");
+    }
 
     // [Theory]
     // [InlineData("true", true)]

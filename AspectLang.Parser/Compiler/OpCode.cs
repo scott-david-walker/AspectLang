@@ -10,7 +10,8 @@ public enum OpCode : byte
     Multiply,
     Minus,
     True,
-    False
+    False,
+    Equality
 }
 
 public static class DefinitionExtensions

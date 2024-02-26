@@ -19,6 +19,7 @@ public class Vm
         { OpCode.Minus, new MinusOperation() },
         { OpCode.True, new TrueOperation() },
         { OpCode.False, new FalseOperation() },
+        { OpCode.Equality, new EqualityOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
