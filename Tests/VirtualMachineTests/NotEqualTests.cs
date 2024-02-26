@@ -6,22 +6,22 @@ using FluentAssertions;
 
 namespace ParserTests.VirtualMachineTests;
 
-public class DivideOperationTests
+public class NotEqualTests
 {
     [Theory]
-    [InlineData(10, 5, 2)]
-    [InlineData(100, 10, 10)]
-    [InlineData(50, 2, 25)]
-    public void CanAddTwoNumbers(int number1, int number2, int outcome)
+    [InlineData(5, 5, false)]
+    [InlineData(2, 99, true)]
+    [InlineData(40, 1234, true)]
+    public void IntegerEqualityAssertions(int number1, int number2, bool outcome)
     {
         var left = new IntegerReturnableObject(number1);
         var right = new IntegerReturnableObject(number2);
-        var instructions = new List<Instruction> { new(OpCode.Divide) };
+        var instructions = new List<Instruction> { new(OpCode.Equality) };
         var vm = new Vm(instructions, []);
-        vm.Push(left);
         vm.Push(right);
-        new DivideOperation().Execute(vm, []);
+        vm.Push(left);
+        new NotEqualOperation().Execute(vm, []);
         var result = vm.Pop();
-        result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(outcome);
+        result.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(outcome);
     }
 }

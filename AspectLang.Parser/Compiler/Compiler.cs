@@ -55,6 +55,9 @@ public class Compiler : IVisitor
             case "==":
                 Emit(OpCode.Equality);
                 break;
+            case "!=":
+                Emit(OpCode.NotEqual);
+                break;
         }
     }
 

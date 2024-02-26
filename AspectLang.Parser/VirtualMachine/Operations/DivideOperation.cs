@@ -1,9 +1,10 @@
 using AspectLang.Parser.Compiler;
 using AspectLang.Parser.Compiler.ReturnableObjects;
 
-namespace AspectLang.Parser.VirtualMachine;
+namespace AspectLang.Parser.VirtualMachine.Operations;
 
-public class EqualityOperation : IOperation
+
+public class DivideOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
@@ -13,13 +14,8 @@ public class EqualityOperation : IOperation
         var rightInt = (IntegerReturnableObject)right;
         var leftInt = (IntegerReturnableObject)left;
 
-        if (rightInt.Value == leftInt.Value)
-        {
-            vm.Push(new BooleanReturnableObject(true));
-        }
-        else
-        {
-            vm.Push(new BooleanReturnableObject(false));
-        }
+        var ret = new IntegerReturnableObject(leftInt.Value / rightInt.Value);
+                    
+        vm.Push(ret);
     }
 }

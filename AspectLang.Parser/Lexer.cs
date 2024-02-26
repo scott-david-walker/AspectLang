@@ -75,6 +75,15 @@ public class Lexer
                 token = new("=", _currentLineNumber, _currentColumnNumber, TokenType.Assignment);
             }
         }
+        
+        if (_currentChar == '!')
+        {
+            if (_source[_readPosition] == '=')
+            {
+                token = new("!=", _currentLineNumber, _currentColumnNumber, TokenType.NotEqual);
+                ReadNextCharacter();
+            }
+        }
 
         if (_currentChar == ';')
         {

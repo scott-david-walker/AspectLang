@@ -1,9 +1,9 @@
 using AspectLang.Parser.Compiler;
 using AspectLang.Parser.Compiler.ReturnableObjects;
 
-namespace AspectLang.Parser.VirtualMachine;
+namespace AspectLang.Parser.VirtualMachine.Operations;
 
-public class AddOperation : IOperation
+public class MultiplyOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
@@ -13,8 +13,9 @@ public class AddOperation : IOperation
         var rightInt = (IntegerReturnableObject)right;
         var leftInt = (IntegerReturnableObject)left;
 
-        var ret = new IntegerReturnableObject(rightInt.Value + leftInt.Value);
+        var ret = new IntegerReturnableObject(leftInt.Value * rightInt.Value);
                     
         vm.Push(ret);
     }
+    
 }

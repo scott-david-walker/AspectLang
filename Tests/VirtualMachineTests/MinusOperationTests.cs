@@ -1,5 +1,6 @@
 using AspectLang.Parser.Compiler.ReturnableObjects;
 using AspectLang.Parser.VirtualMachine;
+using AspectLang.Parser.VirtualMachine.Operations;
 using FluentAssertions;
 
 namespace ParserTests.VirtualMachineTests;

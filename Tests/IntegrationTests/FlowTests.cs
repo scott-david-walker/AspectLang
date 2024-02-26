@@ -43,6 +43,8 @@ public class FlowTests
     [Theory]
     [InlineData("1 == 1", true)]
     [InlineData("1 == 2", false)]
+    [InlineData("1 != 2", true)]
+    [InlineData("1 != 1", false)]
     public void EqualityTests(string source, bool expectedResult)
     {
         var lexer = new Lexer(source);

@@ -1,5 +1,6 @@
 using AspectLang.Parser.Compiler;
 using AspectLang.Parser.Compiler.ReturnableObjects;
+using AspectLang.Parser.VirtualMachine.Operations;
 
 namespace AspectLang.Parser.VirtualMachine;
 
@@ -19,7 +20,8 @@ public class Vm
         { OpCode.Minus, new MinusOperation() },
         { OpCode.True, new TrueOperation() },
         { OpCode.False, new FalseOperation() },
-        { OpCode.Equality, new EqualityOperation() }
+        { OpCode.Equality, new EqualityOperation() },
+        { OpCode.NotEqual, new NotEqualOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
