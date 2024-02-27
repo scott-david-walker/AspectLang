@@ -38,6 +38,19 @@ public class Lexer
     private Token IdentifyToken()
     {
         Token? token = null;
+        if (_currentChar == '"')
+        {
+            var startChar = _readPosition;
+            while (PeekChar() != '"')
+            {
+                ReadNextCharacter();
+            }
+
+            var endChar = _currentPosition;
+            var literal = _source.Substring(startChar, endChar - startChar + 1);
+            ReadNextCharacter();
+            token = new (literal, _currentLineNumber, _currentColumnNumber, TokenType.String);
+        }
         if (_currentChar == '*')
         {
             token = new("*", _currentLineNumber, _currentColumnNumber, TokenType.Asterisk);

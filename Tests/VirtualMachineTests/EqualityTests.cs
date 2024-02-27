@@ -42,4 +42,23 @@ public class EqualityTests
         var result = vm.Pop();
         result.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(outcome);
     }
+    
+    [Theory]
+    [InlineData("test", "test", true)]
+    [InlineData("Test", "test", false)]
+    [InlineData("test string", "test string", true)]
+    [InlineData("test    string", "test string", false)]
+    [InlineData("$", "$", true)]
+    public void StringEqualityAssertions(string first, string second, bool outcome)
+    {
+        var left = new StringReturnableObject(first);
+        var right = new StringReturnableObject(second);
+        var instructions = new List<Instruction> { new(OpCode.Equality) };
+        var vm = new Vm(instructions, []);
+        vm.Push(right);
+        vm.Push(left);
+        new EqualityOperation().Execute(vm, []);
+        var result = vm.Pop();
+        result.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(outcome);
+    }
 }

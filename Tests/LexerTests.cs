@@ -59,4 +59,13 @@ public class LexerTests
         token.TokenType.Should().Be(tokenType);
         token.Literal.Should().Be(source); // lazy but I'm only evaluating a single token
     }
+
+    [Fact]
+    public void ShouldReturnString()
+    {
+        var lexer = new Lexer("\"test string\"");
+        var token = lexer.NextToken();
+        token.TokenType.Should().Be(TokenType.String);
+        token.Literal.Should().Be("test string"); 
+    }
 }

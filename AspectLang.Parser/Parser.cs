@@ -29,6 +29,7 @@ public class Parser
     public Parser(Lexer lexer)
     {
         _prefixParseFunctions.Add(TokenType.Integer, ParseIntegerExpression);
+        _prefixParseFunctions.Add(TokenType.String, ParseStringExpression);
         _prefixParseFunctions.Add(TokenType.LeftParen, ParseGroupedExpression);
         _prefixParseFunctions.Add(TokenType.Minus, ParsePrefixExpression);
         _prefixParseFunctions.Add(TokenType.Exclamation, ParsePrefixExpression);
@@ -220,6 +221,11 @@ public class Parser
 
         throw new ParserException($"Unable to parse {token.Literal} as string", _currentToken.LineNumber,
             _currentToken.ColumnPosition);
+    }
+    
+    private IExpression ParseStringExpression()
+    {
+        return new StringExpression(_currentToken.Literal);
     }
 }
 

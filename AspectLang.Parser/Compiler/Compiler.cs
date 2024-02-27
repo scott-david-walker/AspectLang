@@ -77,14 +77,13 @@ public class Compiler : IVisitor
 
     public void Visit(BooleanExpression expression)
     {
-        if (expression.Value)
-        {
-            Emit(OpCode.True);
-        }
-        else
-        {
-            Emit(OpCode.False);
-        }
+        Emit(expression.Value ? OpCode.True : OpCode.False);
+    }
+
+    public void Visit(StringExpression expression)
+    {
+        var val = expression.Value;
+        Emit(OpCode.Constant, [AddConstant(new StringReturnableObject(val))]);
     }
 
     private void Emit(OpCode opcode)

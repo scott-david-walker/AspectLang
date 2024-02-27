@@ -222,6 +222,19 @@ public class ParserTests
         var infix = node.Expression as InfixExpression;
         infix!.Operator.Should().Be("!=");
     }
+    
+    [Fact]
+    public void CanParseString()
+    {
+        var lexer = new Lexer("\"Test String\";"); // 1 is there as parser expects multiple tokens
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<StringExpression>();
+        var stringExpression = node.Expression as StringExpression;
+        stringExpression!.Value.Should().Be("Test String");
+    }
 
     // [Theory]
     // [InlineData("true", true)]

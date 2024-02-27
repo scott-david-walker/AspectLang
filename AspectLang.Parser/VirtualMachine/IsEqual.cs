@@ -23,6 +23,11 @@ public static class IsEqual
         {
             return rightBool.Value == leftBool.Value;
         }
+        
+        if(right is StringReturnableObject rightString && left is StringReturnableObject leftString)
+        {
+            return rightString.Value == leftString.Value;
+        }
 
         throw new("Unable to compare two objects of different types");
     }
