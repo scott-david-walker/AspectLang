@@ -65,7 +65,7 @@ public class Lexer
         
         if (_currentChar == '=')
         {
-            if (_source[_readPosition] == '=')
+            if (PeekChar() == '=')
             {
                 token = new("==", _currentLineNumber, _currentColumnNumber, TokenType.Equality);
                 ReadNextCharacter();
@@ -78,10 +78,14 @@ public class Lexer
         
         if (_currentChar == '!')
         {
-            if (_source[_readPosition] == '=')
+            if (PeekChar() == '=')
             {
                 token = new("!=", _currentLineNumber, _currentColumnNumber, TokenType.NotEqual);
                 ReadNextCharacter();
+            }
+            else
+            {
+                token = new("!", _currentLineNumber, _currentColumnNumber, TokenType.Exclamation);
             }
         }
 

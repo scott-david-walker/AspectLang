@@ -12,7 +12,8 @@ public enum OpCode : byte
     True,
     False,
     Equality,
-    NotEqual
+    NotEqual,
+    Negate
 }
 
 public static class DefinitionExtensions

@@ -181,6 +181,21 @@ public class ParserTests
     }
     
     [Fact]
+    public void Negate()
+    {
+        var lexer = new Lexer("!true");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<PrefixExpression>();
+
+        var prefix = node.Expression as PrefixExpression;
+        prefix!.Operator.Should().Be("!");
+        prefix.Right.Should().BeAssignableTo<BooleanExpression>().Which.Value.Should().Be(true);
+    }
+    
+    [Fact]
     public void Equality()
     {
         var lexer = new Lexer("20 == 20");

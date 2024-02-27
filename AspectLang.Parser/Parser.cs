@@ -31,6 +31,7 @@ public class Parser
         _prefixParseFunctions.Add(TokenType.Integer, ParseIntegerExpression);
         _prefixParseFunctions.Add(TokenType.LeftParen, ParseGroupedExpression);
         _prefixParseFunctions.Add(TokenType.Minus, ParsePrefixExpression);
+        _prefixParseFunctions.Add(TokenType.Exclamation, ParsePrefixExpression);
         _prefixParseFunctions.Add(TokenType.False, ParseBooleanExpression);
         _prefixParseFunctions.Add(TokenType.True, ParseBooleanExpression);
 

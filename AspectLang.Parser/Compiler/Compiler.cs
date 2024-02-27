@@ -69,6 +69,9 @@ public class Compiler : IVisitor
             case "-":
                 Emit(OpCode.Minus);
                 break;
+            case "!":
+                Emit(OpCode.Negate);
+                break;
         }
     }
 

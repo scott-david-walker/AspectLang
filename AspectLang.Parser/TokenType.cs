@@ -22,5 +22,6 @@ public enum TokenType
     LeftParen,
     RightParen,
     True,
-    False
+    False,
+    Exclamation
 }

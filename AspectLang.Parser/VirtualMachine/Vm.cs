@@ -21,7 +21,8 @@ public class Vm
         { OpCode.True, new TrueOperation() },
         { OpCode.False, new FalseOperation() },
         { OpCode.Equality, new EqualityOperation() },
-        { OpCode.NotEqual, new NotEqualOperation() }
+        { OpCode.NotEqual, new NotEqualOperation() },
+        { OpCode.Negate, new NegateOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
