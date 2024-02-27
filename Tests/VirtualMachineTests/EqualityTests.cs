@@ -24,4 +24,22 @@ public class EqualityTests
         var result = vm.Pop();
         result.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(outcome);
     }
+    
+    [Theory]
+    [InlineData(true, true, true)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(false, false, true)]
+    public void BooleanEqualityAssertions(bool first, bool second, bool outcome)
+    {
+        var left = new BooleanReturnableObject(first);
+        var right = new BooleanReturnableObject(second);
+        var instructions = new List<Instruction> { new(OpCode.Equality) };
+        var vm = new Vm(instructions, []);
+        vm.Push(right);
+        vm.Push(left);
+        new EqualityOperation().Execute(vm, []);
+        var result = vm.Pop();
+        result.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(outcome);
+    }
 }

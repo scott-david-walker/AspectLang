@@ -18,6 +18,11 @@ public static class IsEqual
         {
             return rightInt.Value == leftInt.Value;
         }
+        
+        if(right is BooleanReturnableObject rightBool && left is BooleanReturnableObject leftBool)
+        {
+            return rightBool.Value == leftBool.Value;
+        }
 
         throw new("Unable to compare two objects of different types");
     }
