@@ -10,12 +10,8 @@ public class DivideOperation : IOperation
     {
         var right = vm.Pop();
         var left = vm.Pop();
-
-        var rightInt = (IntegerReturnableObject)right;
-        var leftInt = (IntegerReturnableObject)left;
-
-        var ret = new IntegerReturnableObject(leftInt.Value / rightInt.Value);
-                    
+        var leftNumber = (INumber)left;
+        var ret = leftNumber.Divide(right);
         vm.Push(ret);
     }
 }

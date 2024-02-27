@@ -24,4 +24,18 @@ public class AddOperationTests
         var result = vm.Pop();
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(outcome);
     }
+    
+    [Fact]
+    public void CanAddTwoStrings()
+    {
+        var left = new StringReturnableObject("test");
+        var right = new StringReturnableObject("string");
+        var instructions = new List<Instruction> { new(OpCode.Sum) };
+        var vm = new Vm(instructions, []);
+        vm.Push(right);
+        vm.Push(left);
+        new AddOperation().Execute(vm, []);
+        var result = vm.Pop();
+        result.Should().BeAssignableTo<StringReturnableObject>().Which.Value.Should().Be("teststring");
+    }
 }

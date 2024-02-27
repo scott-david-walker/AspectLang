@@ -9,12 +9,8 @@ public class AddOperation : IOperation
     {
         var right = vm.Pop();
         var left = vm.Pop();
-
-        var rightInt = (IntegerReturnableObject)right;
-        var leftInt = (IntegerReturnableObject)left;
-
-        var ret = new IntegerReturnableObject(rightInt.Value + leftInt.Value);
-                    
+        var rightAddable = (IAddable)right;
+        var ret = rightAddable.Add(left);
         vm.Push(ret);
     }
 }
