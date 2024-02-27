@@ -8,7 +8,6 @@ public static class IsEqual
     {
         var right = vm.Pop();
         var left = vm.Pop();
-
         var equalityChecker = (IIsEqual)left;
         return equalityChecker.IsEqual(right);
     }

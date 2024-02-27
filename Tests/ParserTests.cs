@@ -28,7 +28,7 @@ public class ParserTests
         result.Errors.Should().NotBeEmpty();
         var error = result.Errors[0];
         error.ColumnPosition.Should().Be(6);
-        error.LineNumber.Should().Be(0);
+        error.LineNumber.Should().Be(1);
         error.Message.Should().Be("Expected = but received 5");
     }
     
@@ -41,7 +41,7 @@ public class ParserTests
         result.Errors.Should().NotBeEmpty();
         var error = result.Errors[0];
         error.ColumnPosition.Should().Be(4);
-        error.LineNumber.Should().Be(0);
+        error.LineNumber.Should().Be(1);
         error.Message.Should().Be("Expected identifier but received 5");
     }
 
@@ -226,7 +226,7 @@ public class ParserTests
     [Fact]
     public void CanParseString()
     {
-        var lexer = new Lexer("\"Test String\";"); // 1 is there as parser expects multiple tokens
+        var lexer = new Lexer("\"Test String\";");
         var parser = new Parser(lexer);
         var result = parser.Parse();
         var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
@@ -234,6 +234,46 @@ public class ParserTests
             .BeAssignableTo<StringExpression>();
         var stringExpression = node.Expression as StringExpression;
         stringExpression!.Value.Should().Be("Test String");
+    }
+
+    [Fact]
+    public void ParseIfStatement_WithEmptyBlock_ShouldReturnError()
+    {
+        var lexer = new Lexer("if(1 == 1) {}"); 
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().ContainSingle();
+        var error = result.Errors[0];
+        error.Message.Should().Be("Empty block statments are not allowed");
+        error.LineNumber.Should().Be(1);
+        error.ColumnPosition.Should().Be(12);
+    }
+    
+    [Fact]
+    public void CanParseIfStatement_WithConsequence()
+    {
+        var lexer = new Lexer("if(1 == 1) {val x = 0;}"); 
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().BeEmpty();
+        var node = result.ProgramNode.StatementNodes[0] as IfStatement;
+        node!.Condition.Should()
+            .BeAssignableTo<InfixExpression>();
+        node.Consequence.Statements.Should().ContainSingle().Which.Should().BeAssignableTo<VariableAssignmentNode>();
+    }
+    
+    [Fact]
+    public void CanParseIfStatement_WithConsequence_AndAlternative()
+    {
+        var lexer = new Lexer("if(1 == 1) {val x = 0;} else {val y = 1;}"); 
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().BeEmpty();
+        var node = result.ProgramNode.StatementNodes[0] as IfStatement;
+        node!.Condition.Should()
+            .BeAssignableTo<InfixExpression>();
+        node.Consequence.Statements.Should().ContainSingle().Which.Should().BeAssignableTo<VariableAssignmentNode>();
+        node.Alternative!.Statements.Should().ContainSingle().Which.Should().BeAssignableTo<VariableAssignmentNode>();
     }
 
     // [Theory]

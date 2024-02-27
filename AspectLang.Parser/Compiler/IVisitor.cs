@@ -12,4 +12,6 @@ public interface IVisitor
     void Visit(PrefixExpression expression);
     void Visit(BooleanExpression expression);
     void Visit(StringExpression expression);
+    void Visit(BlockStatement blockStatement);
+    void Visit(IfStatement ifStatement);
 }

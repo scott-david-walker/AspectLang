@@ -9,7 +9,7 @@ public class Vm
     private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
     private readonly Stack<IReturnableObject> _stack = new();
-
+    public int InstructionPointer { get; set; }
     private readonly Dictionary<OpCode, IOperation> _operations = new()
     {
         { OpCode.Constant, new ReadConstantOperation() },
@@ -22,7 +22,9 @@ public class Vm
         { OpCode.False, new FalseOperation() },
         { OpCode.Equality, new EqualityOperation() },
         { OpCode.NotEqual, new NotEqualOperation() },
-        { OpCode.Negate, new NegateOperation() }
+        { OpCode.Negate, new NegateOperation() },
+        { OpCode.JumpWhenFalse, new JumpWhenFalse() },
+        { OpCode.Jump, new JumpOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -32,8 +34,9 @@ public class Vm
 
     public IReturnableObject Run()
     {
-        foreach (var instruction in _instructions)
+        for (InstructionPointer = 0; InstructionPointer < _instructions.Count; InstructionPointer++)
         {
+            var instruction = _instructions[InstructionPointer];
             if (_operations.TryGetValue(instruction.OpCode, out var op))
             {
                 op.Execute(this, instruction.Operands);

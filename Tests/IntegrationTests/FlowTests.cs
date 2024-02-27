@@ -83,6 +83,8 @@ public class FlowTests
 
     [Theory]
     [InlineData("TestFiles/add.aspect", 15)]
+    [InlineData("TestFiles/if.aspect", 4)]
+    [InlineData("TestFiles/if_else.aspect", 2)]
     public async Task RunTestFiles(string file, int expectedResult)
     {
         var source = await File.ReadAllTextAsync(file);

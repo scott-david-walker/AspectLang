@@ -49,6 +49,29 @@ public class Parser
         GetNext();
     }
 
+    private BlockStatement ParseBlockStatement()
+    {
+        AssertNextToken(TokenType.LeftCurly);
+        if (_peekToken.TokenType == TokenType.RightCurly)
+        {
+            throw new ParserException("Empty block statments are not allowed", _peekToken);
+        }
+        GetNext();
+
+        var block = new BlockStatement();
+        while (_peekToken.TokenType != TokenType.RightCurly)
+        {
+            var statement = ParseStatement();
+            block.Statements.Add(statement);
+            if (_peekToken.TokenType == TokenType.SemiColon)
+            {
+                GetNext();
+            }
+        }
+        AssertNextToken(TokenType.RightCurly);
+        return block;
+    }
+
     private IExpression ParseBooleanExpression()
     {
         return _currentToken.TokenType == TokenType.True ? new (true) : new BooleanExpression(false);
@@ -104,16 +127,41 @@ public class Parser
         var assignmentNode = new VariableAssignmentNode(variable, expression);
         return assignmentNode;
     }
-    private INode ParseStatement()
+    private IStatement ParseStatement()
     {
         switch (_currentToken.TokenType)
         {
             case TokenType.Val:
                 return ParseValStatement();
+            case TokenType.If:
+                return ParseIfStatement();
         }
 
         return ParseExpressionStatement();
     }
+
+    private IfStatement ParseIfStatement()
+    {
+        AssertNextToken(TokenType.LeftParen);
+
+        GetNext();
+        var condition = ParseExpression(Priority.Lowest);
+        AssertNextToken(TokenType.RightParen);
+        var consequence = ParseBlockStatement();
+        BlockStatement? alternative = null;
+        if (IsNextToken(TokenType.Else))
+        {
+            GetNext();
+            alternative = ParseBlockStatement();
+        }
+        return new()
+        {
+            Condition = condition,
+            Consequence = consequence,
+            Alternative = alternative
+        };
+    }
+
     public ParseResult Parse()
     {
         var parseResult = new ParseResult();

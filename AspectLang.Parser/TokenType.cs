@@ -24,5 +24,10 @@ public enum TokenType
     True,
     False,
     Exclamation,
-    String
+    String,
+    If,
+    RightBracket,
+    LeftCurly,
+    RightCurly,
+    Else
 }

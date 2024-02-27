@@ -86,6 +86,37 @@ public class Compiler : IVisitor
         Emit(OpCode.Constant, [AddConstant(new StringReturnableObject(val))]);
     }
 
+    public void Visit(BlockStatement blockStatement)
+    {
+        foreach (var statement in blockStatement.Statements)
+        {
+            statement.Accept(this);
+        }
+    }
+
+    public void Visit(IfStatement ifStatement)
+    {
+        ifStatement.Condition.Accept(this);
+        var falsePosition = Emit(OpCode.JumpWhenFalse, [9999]);
+        ifStatement.Consequence.Accept(this);
+        var afterConsequencePosition = Instructions.Count;
+        var jumpToEndOfIfInstructionPosition = Emit(OpCode.Jump, [9999]);
+        var endPosition = afterConsequencePosition;
+        if (ifStatement.Alternative != null)
+        {
+            ifStatement.Alternative.Accept(this);
+            endPosition = Instructions.Count;
+            UpdateInstruction(falsePosition, afterConsequencePosition);
+        }
+        UpdateInstruction(jumpToEndOfIfInstructionPosition, endPosition);
+    }
+
+    private void UpdateInstruction(int position, int location)
+    {
+        var instruction = Instructions[position];
+        instruction.Operands[0].Reference = location;
+    }
+
     private void Emit(OpCode opcode)
     {
         Emit(opcode, []);
@@ -107,7 +138,7 @@ public class Compiler : IVisitor
             return new() { OpCode = opCode };
         }
 
-        if (opCode == OpCode.Constant)
+        if (opCode is OpCode.Constant or OpCode.JumpWhenFalse or OpCode.Jump)
         {
             if (operands.Count > 1)
             {

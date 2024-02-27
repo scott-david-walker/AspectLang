@@ -8,12 +8,14 @@ public class Lexer
     private int _currentPosition;
     private int _readPosition;
     private char _currentChar;
-    private int _currentLineNumber;
+    private int _currentLineNumber = 1;
     private int _currentColumnNumber = -1;
 
     private Dictionary<string, TokenType> _keywords = new()
     {
         { "val", TokenType.Val },
+        { "if", TokenType.If },
+        { "else", TokenType.Else },
         { "true", TokenType.True },
         { "false", TokenType.False }
     };
@@ -38,6 +40,14 @@ public class Lexer
     private Token IdentifyToken()
     {
         Token? token = null;
+        if (_currentChar == '{')
+        {
+            token = new ("{", _currentLineNumber, _currentColumnNumber, TokenType.LeftCurly);
+        }
+        if (_currentChar == '}')
+        {
+            token = new ("}", _currentLineNumber, _currentColumnNumber, TokenType.RightCurly);
+        }
         if (_currentChar == '"')
         {
             var startChar = _readPosition;
@@ -123,9 +133,13 @@ public class Lexer
         {
             var startColumn = _currentColumnNumber;
             var sb = new StringBuilder();
-            while (IsLetter(_currentChar) || IsDigit(_currentChar) || _currentChar == '_')
+            while (IsIdentifierCompliant(_currentChar))
             {
                 sb.Append(_currentChar);
+                if (!IsIdentifierCompliant(PeekChar()))
+                {
+                    break;
+                }
                 ReadNextCharacter();
             }
 
@@ -149,6 +163,11 @@ public class Lexer
         return token;
     }
 
+    private bool IsIdentifierCompliant(char character)
+    {
+        return IsLetter(character) || IsDigit(character) || character == '_';
+    }
+
     private char PeekChar()
     {
         if (_readPosition >= _source.Length)
@@ -158,12 +177,12 @@ public class Lexer
         return _source[_readPosition];
     }
 
-    private bool IsDigit(char currentChar)
+    private static bool IsDigit(char currentChar)
     {
         return char.IsDigit(currentChar);
     }
 
-    private bool IsLetter(char currentChar)
+    private static bool IsLetter(char currentChar)
     {
         return char.IsLetter(currentChar);
     }
@@ -192,10 +211,11 @@ public class Lexer
                 // do nothing as we've already handled.
             }
         }
-        
-        if (_currentChar == 32)
+
+        while (_currentChar == 32)
         {
             ReadNextCharacter();
+
         }
     }
     private void ReadNextCharacter()

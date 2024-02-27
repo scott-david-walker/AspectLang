@@ -6,12 +6,12 @@ namespace ParserTests;
 public class LexerTests
 {
     [Fact]
-    public void OnInstantiation_ShouldBeLineZeroAndColumnZeroAndEndOfFile()
+    public void OnInstantiation_ShouldBeLineOneAndColumnZeroAndEndOfFile()
     {
         var lexer = new Lexer("");
         var token = lexer.NextToken();
         token.TokenType.Should().Be(TokenType.EndOfFile);
-        token.LineNumber.Should().Be(0);
+        token.LineNumber.Should().Be(1);
         token.ColumnPosition.Should().Be(0);
         token.Literal.Should().BeNull();
     }
@@ -23,7 +23,7 @@ public class LexerTests
     {
         var lexer = new Lexer(source);
         var token = lexer.NextToken();
-        token.LineNumber.Should().Be(1);
+        token.LineNumber.Should().Be(2);
     }
 
     [Fact]
@@ -52,6 +52,10 @@ public class LexerTests
     [InlineData("==", TokenType.Equality)]
     [InlineData("!=", TokenType.NotEqual)]
     [InlineData("!", TokenType.Exclamation)]
+    [InlineData("if", TokenType.If)]
+    [InlineData("else", TokenType.Else)]
+    [InlineData("{", TokenType.LeftCurly)]
+    [InlineData("}", TokenType.RightCurly)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

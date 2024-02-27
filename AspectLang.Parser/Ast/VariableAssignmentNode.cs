@@ -2,7 +2,7 @@ using AspectLang.Parser.Compiler;
 
 namespace AspectLang.Parser.Ast;
 
-public class VariableAssignmentNode : INode
+public class VariableAssignmentNode : IStatement
 {
     public VariableAssignmentNode(VariableDeclarationNode variableDeclarationNode, IExpression expression)
     {
