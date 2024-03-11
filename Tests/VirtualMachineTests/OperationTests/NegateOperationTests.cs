@@ -4,7 +4,7 @@ using AspectLang.Parser.VirtualMachine;
 using AspectLang.Parser.VirtualMachine.Operations;
 using FluentAssertions;
 
-namespace ParserTests.VirtualMachineTests;
+namespace ParserTests.VirtualMachineTests.OperationTests;
 
 public class NegateOperationTests
 {

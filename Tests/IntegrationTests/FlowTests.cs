@@ -80,7 +80,7 @@ public class FlowTests
         var res = vm.Run();
         res.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(expectedResult);
     }
-
+    
     [Theory]
     [InlineData("TestFiles/add.aspect", 15)]
     [InlineData("TestFiles/if.aspect", 4)]

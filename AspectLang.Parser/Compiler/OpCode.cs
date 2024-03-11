@@ -15,7 +15,10 @@ public enum OpCode : byte
     NotEqual,
     Negate,
     JumpWhenFalse,
-    Jump
+    Jump,
+    SetGlobal,
+    GetGlobal,
+    Return
 }
 
 public static class DefinitionExtensions

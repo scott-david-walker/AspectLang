@@ -8,6 +8,7 @@ public class Vm
 {
     private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
+    private readonly List<IReturnableObject> _globals = [];
     private readonly Stack<IReturnableObject> _stack = new();
     public int InstructionPointer { get; set; }
     private readonly Dictionary<OpCode, IOperation> _operations = new()
@@ -24,7 +25,10 @@ public class Vm
         { OpCode.NotEqual, new NotEqualOperation() },
         { OpCode.Negate, new NegateOperation() },
         { OpCode.JumpWhenFalse, new JumpWhenFalse() },
-        { OpCode.Jump, new JumpOperation() }
+        { OpCode.Jump, new JumpOperation() },
+        { OpCode.SetGlobal, new SetGlobalOperation() },
+        { OpCode.GetGlobal, new GetGlobalOperation() },
+        { OpCode.Return, new ReturnOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -59,5 +63,42 @@ public class Vm
     public IReturnableObject GetConstant(int index)
     {
         return _constants[index];
+    }
+
+    public void SetGlobal(IReturnableObject returnableObject)
+    {
+        _globals.Add(returnableObject);
+    }
+    
+    public void GetGlobal(int globalLocation)
+    {
+        Push(_globals[globalLocation]);
+    }
+}
+
+internal class ReturnOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        
+    }
+}
+
+internal class SetGlobalOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var expression = vm.Pop();
+        vm.SetGlobal(expression);
+    }
+}
+
+internal class GetGlobalOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var operand = operands[0];
+        var location = operand.Reference;
+        vm.GetGlobal(location.Value);
     }
 }

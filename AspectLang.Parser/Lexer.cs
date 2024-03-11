@@ -17,7 +17,8 @@ public class Lexer
         { "if", TokenType.If },
         { "else", TokenType.Else },
         { "true", TokenType.True },
-        { "false", TokenType.False }
+        { "false", TokenType.False },
+        { "return", TokenType.Return }
     };
     public Lexer(string source)
     {

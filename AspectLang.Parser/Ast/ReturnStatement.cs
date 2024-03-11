@@ -2,10 +2,9 @@ using AspectLang.Parser.Compiler;
 
 namespace AspectLang.Parser.Ast;
 
-public class VariableDeclarationNode(Token token) : INode
+public class ReturnStatement : IStatement
 {
-    public string Name { get; } = token.Literal;
-
+    public IExpression Value { get; set; }
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);

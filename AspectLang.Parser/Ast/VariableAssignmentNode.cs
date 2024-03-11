@@ -15,6 +15,6 @@ public class VariableAssignmentNode : IStatement
 
     public void Accept(IVisitor visitor)
     {
-        
+        visitor.Visit(this);
     }
 }

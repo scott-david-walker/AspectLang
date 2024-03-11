@@ -18,6 +18,22 @@ public class ParserTests
         node!.VariableDeclarationNode.Name.Should().Be("x");
         node!.Expression.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
     }
+    
+    [Fact]
+    public void CanReassignVal()
+    {
+        var lexer = new Lexer("val x = 5; x = 10;");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<VariableAssignmentNode>();
+        var firstNode = result.ProgramNode.StatementNodes[0] as VariableAssignmentNode;
+        firstNode!.VariableDeclarationNode.Name.Should().Be("x");
+        firstNode.Expression.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(5);
+        
+        var secondNode = result.ProgramNode.StatementNodes[1] as VariableAssignmentNode;
+        secondNode!.VariableDeclarationNode.Name.Should().Be("x");
+        secondNode.Expression.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(10);
+    }
 
     [Fact]
     public void WhenNextStatementIsNotAssignment_ShouldReturnError()
@@ -274,6 +290,18 @@ public class ParserTests
             .BeAssignableTo<InfixExpression>();
         node.Consequence.Statements.Should().ContainSingle().Which.Should().BeAssignableTo<VariableAssignmentNode>();
         node.Alternative!.Statements.Should().ContainSingle().Which.Should().BeAssignableTo<VariableAssignmentNode>();
+    }
+    
+    [Fact]
+    public void CanParseReturnStatement()
+    {
+        var lexer = new Lexer("return x;"); 
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        result.Errors.Should().BeEmpty();
+        var node = result.ProgramNode.StatementNodes[0] as ReturnStatement;
+        node!.Value.Should()
+            .BeAssignableTo<Identifier>();
     }
 
     // [Theory]

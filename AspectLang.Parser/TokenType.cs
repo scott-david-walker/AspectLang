@@ -29,5 +29,6 @@ public enum TokenType
     RightBracket,
     LeftCurly,
     RightCurly,
-    Else
+    Else,
+    Return
 }

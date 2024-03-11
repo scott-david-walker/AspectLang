@@ -14,4 +14,8 @@ public interface IVisitor
     void Visit(StringExpression expression);
     void Visit(BlockStatement blockStatement);
     void Visit(IfStatement ifStatement);
+    void Visit(VariableDeclarationNode variableDeclaration);
+    void Visit(VariableAssignmentNode variableAssignment);
+    void Visit(Identifier identifier);
+    void Visit(ReturnStatement returnStatement);
 }

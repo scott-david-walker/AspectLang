@@ -1,7 +1,7 @@
 using AspectLang.Parser.Compiler;
 using FluentAssertions;
 
-namespace ParserTests.CompilerTests;
+namespace ParserTests.CompilerTests.ExpressionTests;
 
 public class BooleanExpressionTests
 {

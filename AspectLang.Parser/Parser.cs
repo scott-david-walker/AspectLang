@@ -28,6 +28,7 @@ public class Parser
 
     public Parser(Lexer lexer)
     {
+        _prefixParseFunctions.Add(TokenType.Identifier, ParseIdentifier);
         _prefixParseFunctions.Add(TokenType.Integer, ParseIntegerExpression);
         _prefixParseFunctions.Add(TokenType.String, ParseStringExpression);
         _prefixParseFunctions.Add(TokenType.LeftParen, ParseGroupedExpression);
@@ -47,6 +48,14 @@ public class Parser
         _lexer = lexer;
         GetNext();
         GetNext();
+    }
+
+    private IExpression ParseIdentifier()
+    {
+        return new Identifier
+        {
+            Name = _currentToken.Literal
+        };
     }
 
     private BlockStatement ParseBlockStatement()
@@ -107,14 +116,21 @@ public class Parser
         return infixExpression;
     }
 
-    private VariableAssignmentNode ParseValStatement()
+    private ReturnStatement ParseReturnStatement()
     {
-        if (_peekToken.TokenType != TokenType.Identifier)
-        {
-            throw new ParserException($"Expected identifier but received {_peekToken.Literal}", _peekToken);
-        }
-
         GetNext();
+
+        var expression = ParseExpression(Priority.Lowest);
+
+        var statement = new ReturnStatement
+        {
+            Value = expression
+        };
+        AssertNextToken(TokenType.SemiColon);
+        return statement;
+    }
+    private VariableAssignmentNode ParseValAssignment()
+    {
         var variable = new VariableDeclarationNode(_currentToken);
         if (_peekToken.TokenType != TokenType.Assignment)
         {
@@ -125,7 +141,18 @@ public class Parser
         GetNext();
         var expression = ParseExpression(Priority.Lowest);
         var assignmentNode = new VariableAssignmentNode(variable, expression);
+        AssertNextToken(TokenType.SemiColon);
         return assignmentNode;
+    }
+    private VariableAssignmentNode ParseValStatement()
+    {
+        if (_peekToken.TokenType != TokenType.Identifier)
+        {
+            throw new ParserException($"Expected identifier but received {_peekToken.Literal}", _peekToken);
+        }
+
+        GetNext();
+        return ParseValAssignment();
     }
     private IStatement ParseStatement()
     {
@@ -133,6 +160,10 @@ public class Parser
         {
             case TokenType.Val:
                 return ParseValStatement();
+            case TokenType.Identifier:
+                return ParseValAssignment();
+            case TokenType.Return:
+                return ParseReturnStatement();
             case TokenType.If:
                 return ParseIfStatement();
         }

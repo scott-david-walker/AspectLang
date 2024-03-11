@@ -1,6 +1,7 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler.ReturnableObjects;
+using AspectLang.Parser.VirtualMachine;
 
 namespace AspectLang.Parser.Compiler;
 
@@ -8,6 +9,8 @@ public class Compiler : IVisitor
 {
     public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
+    private readonly SymbolTable _symbolTable = new();
+
     public void Compile(INode node)
     {
         node.Accept(this);
@@ -111,6 +114,30 @@ public class Compiler : IVisitor
         UpdateInstruction(jumpToEndOfIfInstructionPosition, endPosition);
     }
 
+    public void Visit(VariableDeclarationNode variableDeclaration)
+    {
+        variableDeclaration.Accept(this);
+    }
+
+    public void Visit(VariableAssignmentNode variableAssignment)
+    {
+        variableAssignment.Expression.Accept(this);
+        var symbol = _symbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
+        Emit(OpCode.SetGlobal, [symbol.Index]);
+    }
+
+    public void Visit(Identifier identifier)
+    {
+        var symbol = _symbolTable.Resolve(identifier.Name);
+        Emit(OpCode.GetGlobal, [symbol.Index]);
+    }
+
+    public void Visit(ReturnStatement returnStatement)
+    {
+        returnStatement.Value.Accept(this);
+        Emit(OpCode.Return);
+    }
+
     private void UpdateInstruction(int position, int location)
     {
         var instruction = Instructions[position];
@@ -138,7 +165,7 @@ public class Compiler : IVisitor
             return new() { OpCode = opCode };
         }
 
-        if (opCode is OpCode.Constant or OpCode.JumpWhenFalse or OpCode.Jump)
+        if (opCode is OpCode.Constant or OpCode.JumpWhenFalse or OpCode.Jump or OpCode.SetGlobal or OpCode.GetGlobal)
         {
             if (operands.Count > 1)
             {
