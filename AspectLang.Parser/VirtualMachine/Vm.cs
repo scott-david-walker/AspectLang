@@ -9,7 +9,8 @@ public class Vm
     private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
     private readonly List<IReturnableObject> _globals = [];
-    private readonly Stack<IReturnableObject> _stack = new();
+    private readonly Stack<StackFrame> _stack = new();
+    private StackFrame _currentFrame = new();
     public int InstructionPointer { get; set; }
     private readonly Dictionary<OpCode, IOperation> _operations = new()
     {
@@ -47,19 +48,31 @@ public class Vm
             }
         }
 
-        return _stack.Pop();
+        return _currentFrame.Pop();
     }
 
     public void Push(IReturnableObject returnableObject)
     {
-        _stack.Push(returnableObject);
+        _currentFrame.Push(returnableObject);
     }
 
     public IReturnableObject Pop()
     {
-        return _stack.Pop();
+        return _currentFrame.Pop();
     }
 
+    private void PushFrame()
+    {
+        var frame = new StackFrame();
+        _currentFrame = frame;
+        _stack.Push(frame);
+    }
+
+    private StackFrame PopFrame()
+    {
+        return _stack.Pop();
+    }
+    
     public IReturnableObject GetConstant(int index)
     {
         return _constants[index];
