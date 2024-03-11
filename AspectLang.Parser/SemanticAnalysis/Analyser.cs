@@ -121,9 +121,35 @@ public class Analyser : IVisitor
 
     public void Visit(Identifier identifier)
     {
+        var symbolScope = _scopeCount == 0 ? SymbolScope.Global : SymbolScope.Local;
+        var exists = false;
+        var scope = _currentScope;
+        while (scope != null)
+        {
+            exists = scope.SymbolTable.Exists(identifier.Name);
+            if (exists)
+            {
+                break;
+            }
+
+            scope = scope.Parent;
+        }
+
+        if (exists)
+        {
+            identifier.Scope = symbolScope;
+        }
+        else
+        {
+            throw new ParserException(
+                $"Variable with name {identifier.Name} does not exist",
+                identifier.Token);
+        }
+
     }
 
     public void Visit(ReturnStatement returnStatement)
     {
+        returnStatement.Value.Accept(this);
     }
 }

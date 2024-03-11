@@ -55,6 +55,7 @@ public class Parser
     {
         return new Identifier
         {
+            Token = _currentToken,
             Name = _currentToken.Literal
         };
     }
@@ -126,6 +127,7 @@ public class Parser
 
         var statement = new ReturnStatement
         {
+            Token = _currentToken,
             Value = expression
         };
         AssertNextToken(TokenType.SemiColon);
@@ -158,6 +160,10 @@ public class Parser
     }
     private IStatement ParseStatement()
     {
+        if (_currentToken.TokenType == TokenType.SemiColon)
+        {
+            GetNext();
+        }
         switch (_currentToken.TokenType)
         {
             case TokenType.Val:

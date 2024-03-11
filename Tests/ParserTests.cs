@@ -295,11 +295,11 @@ public class ParserTests
     [Fact]
     public void CanParseReturnStatement()
     {
-        var lexer = new Lexer("return x;"); 
+        var lexer = new Lexer("val x = 5; return x;"); 
         var parser = new Parser(lexer);
         var result = parser.Parse();
         result.Errors.Should().BeEmpty();
-        var node = result.ProgramNode.StatementNodes[0] as ReturnStatement;
+        var node = result.ProgramNode.StatementNodes[1] as ReturnStatement;
         node!.Value.Should()
             .BeAssignableTo<Identifier>();
     }

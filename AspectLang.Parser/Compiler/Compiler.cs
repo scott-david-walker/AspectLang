@@ -10,7 +10,7 @@ public class Compiler : IVisitor
 {
     public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
-    private readonly SymbolTable _symbolTable = new();
+    private Scope _scope = new(null);
 
     public void Compile(INode node)
     {
@@ -93,10 +93,14 @@ public class Compiler : IVisitor
     public void Visit(BlockStatement blockStatement)
     {
         Emit(OpCode.EnterScope);
+        var scope = new Scope(_scope);
+        _scope = scope;
         foreach (var statement in blockStatement.Statements)
         {
             statement.Accept(this);
         }
+
+        _scope = scope.Parent;
         Emit(OpCode.ExitScope);
     }
 
@@ -125,14 +129,53 @@ public class Compiler : IVisitor
     public void Visit(VariableAssignmentNode variableAssignment)
     {
         variableAssignment.Expression.Accept(this);
-        var symbol = _symbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
-        Emit(OpCode.SetGlobal, [symbol.Index]);
+        Symbol symbol = null;
+        if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
+        {
+            symbol = _scope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
+        }
+        else
+        {
+            symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
+        }
+        
+        if (symbol.Scope == SymbolScope.Local)
+        {
+            Emit(OpCode.SetLocal, [symbol.Index]);
+        }
+        else
+        {
+            Emit(OpCode.SetGlobal, [symbol.Index]);
+        }
     }
 
     public void Visit(Identifier identifier)
     {
-        var symbol = _symbolTable.Resolve(identifier.Name);
-        Emit(OpCode.GetGlobal, [symbol.Index]);
+        var symbol = FindVariableInScope(identifier.Name);
+
+        if (symbol.Scope == SymbolScope.Local)
+        {
+            Emit(OpCode.GetLocal, [symbol.Index]);
+        }
+        else
+        {
+            Emit(OpCode.GetGlobal, [symbol.Index]);
+        }
+    }
+
+    private Symbol FindVariableInScope(string identifier)
+    {
+        var scope = _scope;
+        while (scope != null)
+        {
+            if (scope.SymbolTable.Exists(identifier))
+            {
+                break;
+            }
+            scope = scope.Parent;
+        }
+        var symbol = scope.SymbolTable.Resolve(identifier);
+        return symbol;
     }
 
     public void Visit(ReturnStatement returnStatement)
@@ -168,26 +211,27 @@ public class Compiler : IVisitor
             return new() { OpCode = opCode };
         }
 
-        if (opCode is OpCode.Constant or OpCode.JumpWhenFalse or OpCode.Jump or OpCode.SetGlobal or OpCode.GetGlobal)
+        //TODO: This is horrid
+        var length = opCode.FindLength();
+        if (length == 0)
         {
-            if (operands.Count > 1)
-            {
-                // We only ever expect a constant to point to an index. In reality, the length should only be one..
-                throw new("Expected opcode to contain index of constant. Length too long");
-            }
-            var operand = new Operand
-            {
-                OperandType = OperandType.Pointer,
-                Reference = operands[0]
-            };
-            return new()
-            {
-                OpCode = opCode,
-                Operands = [operand]
-            };
+            throw new("Expected opcode to have memory allocated for operands");
         }
-
-        return null; //TODO
+        if (operands.Count > 1)
+        {
+            // We only ever expect a constant to point to an index. In reality, the length should only be one..
+            throw new("Expected opcode to contain index of constant. Length too long");
+        }
+        var operand = new Operand
+        {
+            OperandType = OperandType.Pointer,
+            Reference = operands[0]
+        };
+        return new()
+        {
+            OpCode = opCode,
+            Operands = [operand]
+        };
     }
     
     private int AddInstructions(Instruction instruction)

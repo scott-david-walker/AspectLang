@@ -32,6 +32,8 @@ public class Vm
         { OpCode.Return, new ReturnOperation() },
         { OpCode.EnterScope, new EnterScopeOperation() },
         { OpCode.ExitScope, new ExitScopeOperation() },
+        { OpCode.SetLocal, new SetLocalOperation() },
+        { OpCode.GetLocal, new GetLocalOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -80,14 +82,33 @@ public class Vm
         return _constants[index];
     }
 
-    public void SetGlobal(IReturnableObject returnableObject)
+    public void SetGlobal(IReturnableObject returnableObject, int location)
     {
-        _globals.Add(returnableObject);
+        var exists = _globals.ElementAtOrDefault(location);
+        if (exists != null)
+        {
+            _globals[location] = returnableObject;
+        }
+        else
+        {
+            _globals.Add(returnableObject);
+        }
     }
     
     public void GetGlobal(int globalLocation)
     {
         Push(_globals[globalLocation]);
+    }
+    
+    public void SetLocal(IReturnableObject returnableObject, int location)
+    {
+        _currentFrame.SetLocalVariable(returnableObject, location);
+     
+    }
+    
+    public void GetLocal(int localLocation)
+    {
+        _currentFrame.GetLocal(localLocation);
     }
 
     public void EnterScope()
@@ -97,6 +118,26 @@ public class Vm
     public void ExitScope()
     {
         _currentFrame.ExitScope();
+    }
+}
+
+internal class GetLocalOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var operand = operands[0];
+        var location = operand.Reference;
+        vm.GetLocal(location.Value);    }
+}
+
+internal class SetLocalOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var operand = operands[0];
+        var location = operand.Reference;
+        var expression = vm.Pop();
+        vm.SetLocal(expression, location.Value);
     }
 }
 
@@ -127,8 +168,10 @@ internal class SetGlobalOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
+        var operand = operands[0];
+        var location = operand.Reference;
         var expression = vm.Pop();
-        vm.SetGlobal(expression);
+        vm.SetGlobal(expression, location.Value);
     }
 }
 

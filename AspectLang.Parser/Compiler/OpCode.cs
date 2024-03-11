@@ -20,35 +20,26 @@ public enum OpCode : byte
     GetGlobal,
     Return,
     EnterScope,
-    ExitScope
+    ExitScope,
+    SetLocal,
+    GetLocal
 }
 
 public static class DefinitionExtensions
 {
-    private static readonly Dictionary<byte, Definition> Opcodes = new()
+    private static readonly Dictionary<OpCode, int> Opcodes = new()
     {
-        { 0, new(OpCode.Illegal) },
-        { 1, new(OpCode.Constant, 2) },
-        { 2, new(OpCode.Sum) }
+        { OpCode.Constant, 2},
+        { OpCode.JumpWhenFalse, 2},
+        { OpCode.Jump, 2},
+        { OpCode.GetGlobal, 2},
+        { OpCode.SetGlobal, 2},
+        { OpCode.GetLocal, 2},
+        { OpCode.SetLocal, 2},
     };
-        
-    public static Definition Find(this OpCode opCode)
-    {
-        return Opcodes.TryGetValue((byte)opCode, out var value) ? value : Opcodes[0];
-    }
-    
-    public static Definition Find(this byte opCode)
-    {
-        return Opcodes.TryGetValue(opCode, out var value) ? value : Opcodes[0];
-    }
-    
-    public readonly struct Definition(OpCode code, int length)
-    {
-        public Definition(OpCode code) : this(code, 0)
-        {
-        }
 
-        public OpCode Code { get; } = code;
-        public int Length { get; } = length;
+    public static int FindLength(this OpCode opCode)
+    {
+        return Opcodes.ContainsKey(opCode) ? Opcodes[opCode] : 0;
     }
 }
