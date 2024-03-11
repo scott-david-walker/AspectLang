@@ -1,3 +1,4 @@
+using AspectLang.Parser;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler;
 using FluentAssertions;
@@ -16,8 +17,8 @@ public class InfixExpressionTests
     public void OutputCorrectConstantsAndOperator(string @operator, OpCode opCode)
     {
         var infix = new InfixExpression();
-        var right = new IntegerExpression(1);
-        var left = new IntegerExpression(1);
+        var right = new IntegerExpression(1, new ("1", 0, 0, TokenType.Integer));
+        var left = new IntegerExpression(1, new ("1", 0, 0, TokenType.Integer));
         infix.Operator = @operator;
         infix.Right = right;
         infix.Left = left;

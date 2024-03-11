@@ -1,5 +1,6 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
+using AspectLang.Parser.SemanticAnalysis;
 
 namespace AspectLang.Parser;
 
@@ -83,12 +84,12 @@ public class Parser
 
     private IExpression ParseBooleanExpression()
     {
-        return _currentToken.TokenType == TokenType.True ? new (true) : new BooleanExpression(false);
+        return _currentToken.TokenType == TokenType.True ? new (true, _currentToken) : new BooleanExpression(false, _currentToken);
     }
 
     private IExpression ParsePrefixExpression()
     { 
-        var expression = new PrefixExpression(_currentToken.Literal);
+        var expression = new PrefixExpression(_currentToken);
         GetNext();
         expression.Right = ParseExpression(Priority.Prefix);
         return expression;
@@ -107,7 +108,8 @@ public class Parser
         var infixExpression =  new InfixExpression()
         {
             Operator = _currentToken.Literal,
-            Left = expression
+            Left = expression,
+            Token = _currentToken
         };
         
         var precedence = CurrentPrecedence();
@@ -129,9 +131,9 @@ public class Parser
         AssertNextToken(TokenType.SemiColon);
         return statement;
     }
-    private VariableAssignmentNode ParseValAssignment()
+    private VariableAssignmentNode ParseValAssignment(bool isFreshAssignment)
     {
-        var variable = new VariableDeclarationNode(_currentToken);
+        var variable = new VariableDeclarationNode(_currentToken, isFreshAssignment);
         if (_peekToken.TokenType != TokenType.Assignment)
         {
             throw new ParserException($"Expected = but received {_peekToken.Literal}", _peekToken);
@@ -140,7 +142,7 @@ public class Parser
         GetNext();
         GetNext();
         var expression = ParseExpression(Priority.Lowest);
-        var assignmentNode = new VariableAssignmentNode(variable, expression);
+        var assignmentNode = new VariableAssignmentNode(variable, expression, _currentToken);
         AssertNextToken(TokenType.SemiColon);
         return assignmentNode;
     }
@@ -152,7 +154,7 @@ public class Parser
         }
 
         GetNext();
-        return ParseValAssignment();
+        return ParseValAssignment(true);
     }
     private IStatement ParseStatement()
     {
@@ -161,7 +163,7 @@ public class Parser
             case TokenType.Val:
                 return ParseValStatement();
             case TokenType.Identifier:
-                return ParseValAssignment();
+                return ParseValAssignment(false);
             case TokenType.Return:
                 return ParseReturnStatement();
             case TokenType.If:
@@ -204,14 +206,18 @@ public class Parser
                 parseResult.ProgramNode.StatementNodes.Add(statement);
                 GetNext();
             }
+            new Analyser().Analyse(parseResult.ProgramNode);
         }
         catch (ParserException ex)
         {
             return new(new ParserError(ex.Message, ex.LineNumber, ex.ColumnNumber));
         }
+
         
         return parseResult;
     }
+    
+    
 
     private void GetNext()
     {
@@ -295,7 +301,7 @@ public class Parser
         var token = _currentToken;
         if (int.TryParse(token.Literal, out var value))
         {
-            return new IntegerExpression(value);
+            return new IntegerExpression(value, _currentToken);
         }
 
         throw new ParserException($"Unable to parse {token.Literal} as string", _currentToken.LineNumber,

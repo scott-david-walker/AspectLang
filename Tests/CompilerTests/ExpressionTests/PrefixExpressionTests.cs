@@ -1,3 +1,4 @@
+using AspectLang.Parser;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler;
 using FluentAssertions;
@@ -10,9 +11,9 @@ public class PrefixExpressionTests
     public void MinusPrefix_WhenCompilingInt_ShouldHaveOneInstructionAndOneConstant()
     {
         var compiler = new Compiler();
-        var minus = new PrefixExpression("-")
+        var minus = new PrefixExpression(new("-", 0, 0, TokenType.Minus))
         {
-            Right = new IntegerExpression(5)
+            Right = new IntegerExpression(5, new("5", 0, 0, TokenType.Integer))
         };
         compiler.Visit(minus);
         compiler.Instructions.Should().HaveCount(2);
@@ -25,9 +26,9 @@ public class PrefixExpressionTests
     public void ExclamationPrefix_WhenCompilingBoolean_ShouldHaveTwoInstruction()
     {
         var compiler = new Compiler();
-        var boolean = new PrefixExpression("!")
+        var boolean = new PrefixExpression(new("!", 0, 0, TokenType.Exclamation))
         {
-            Right = new BooleanExpression(true)
+            Right = new BooleanExpression(true, new("true", 0, 0, TokenType.True))
         };
         compiler.Visit(boolean);
         compiler.Instructions.Should().HaveCount(2);

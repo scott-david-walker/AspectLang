@@ -1,4 +1,4 @@
-namespace AspectLang.Parser.VirtualMachine;
+namespace AspectLang.Shared;
 
 public class Symbol(string name, SymbolScope scope, int index)
 {

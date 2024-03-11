@@ -29,7 +29,9 @@ public class Vm
         { OpCode.Jump, new JumpOperation() },
         { OpCode.SetGlobal, new SetGlobalOperation() },
         { OpCode.GetGlobal, new GetGlobalOperation() },
-        { OpCode.Return, new ReturnOperation() }
+        { OpCode.Return, new ReturnOperation() },
+        { OpCode.EnterScope, new EnterScopeOperation() },
+        { OpCode.ExitScope, new ExitScopeOperation() },
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -87,8 +89,32 @@ public class Vm
     {
         Push(_globals[globalLocation]);
     }
+
+    public void EnterScope()
+    {
+        _currentFrame.EnterScope();
+    }
+    public void ExitScope()
+    {
+        _currentFrame.ExitScope();
+    }
 }
 
+internal class EnterScopeOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        vm.EnterScope();
+    }
+}
+
+internal class ExitScopeOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        vm.ExitScope();
+    }
+}
 internal class ReturnOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)

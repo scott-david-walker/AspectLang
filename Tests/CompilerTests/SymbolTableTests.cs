@@ -1,4 +1,5 @@
 using AspectLang.Parser.VirtualMachine;
+using AspectLang.Shared;
 using FluentAssertions;
 
 namespace ParserTests.CompilerTests;

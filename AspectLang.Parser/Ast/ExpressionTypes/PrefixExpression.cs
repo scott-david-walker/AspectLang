@@ -4,12 +4,13 @@ namespace AspectLang.Parser.Ast.ExpressionTypes;
 
 public class PrefixExpression : IExpression
 {
-    public string Operator { get; set; }
+    public Token Token { get;  }
+    public string Operator => Token.Literal;
     public IExpression Right { get; set; }
 
-    public PrefixExpression(string @operator)
+    public PrefixExpression(Token token)
     {
-        Operator = @operator;
+        Token = token;
     }
     public void Accept(IVisitor visitor)
     {

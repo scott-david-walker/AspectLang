@@ -1,3 +1,4 @@
+using AspectLang.Parser;
 using AspectLang.Parser.Compiler;
 using AspectLang.Parser.Compiler.ReturnableObjects;
 using FluentAssertions;
@@ -10,7 +11,7 @@ public class IntegerExpressionTests
     public void WhenCompilingInt_ShouldHaveOneInstructionAndOneConstant()
     {
         var compiler = new Compiler();
-        compiler.Visit(new AspectLang.Parser.Ast.ExpressionTypes.IntegerExpression(5));
+        compiler.Visit(new AspectLang.Parser.Ast.ExpressionTypes.IntegerExpression(5,  new ("1", 0, 0, TokenType.Integer)));
         compiler.Instructions.Should().ContainSingle();
         compiler.Constants.Should().ContainSingle();
         var instruction = compiler.Instructions[0];

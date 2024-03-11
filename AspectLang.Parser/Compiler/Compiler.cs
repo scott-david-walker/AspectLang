@@ -2,6 +2,7 @@ using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler.ReturnableObjects;
 using AspectLang.Parser.VirtualMachine;
+using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
 
@@ -91,10 +92,12 @@ public class Compiler : IVisitor
 
     public void Visit(BlockStatement blockStatement)
     {
+        Emit(OpCode.EnterScope);
         foreach (var statement in blockStatement.Statements)
         {
             statement.Accept(this);
         }
+        Emit(OpCode.ExitScope);
     }
 
     public void Visit(IfStatement ifStatement)

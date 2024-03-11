@@ -18,7 +18,9 @@ public enum OpCode : byte
     Jump,
     SetGlobal,
     GetGlobal,
-    Return
+    Return,
+    EnterScope,
+    ExitScope
 }
 
 public static class DefinitionExtensions

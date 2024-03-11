@@ -5,6 +5,7 @@ namespace AspectLang.Parser.Ast.ExpressionTypes;
 
 public class InfixExpression : IExpression
 {
+    public Token Token { get; set; }
     public string Operator { get; set; }
     public IExpression Right { get; set; }
     public IExpression Left { get; set; }
