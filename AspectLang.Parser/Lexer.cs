@@ -18,7 +18,8 @@ public class Lexer
         { "else", TokenType.Else },
         { "true", TokenType.True },
         { "false", TokenType.False },
-        { "return", TokenType.Return }
+        { "return", TokenType.Return },
+        { "fn", TokenType.Function },
     };
     public Lexer(string source)
     {
@@ -48,6 +49,10 @@ public class Lexer
         if (_currentChar == '}')
         {
             token = new ("}", _currentLineNumber, _currentColumnNumber, TokenType.RightCurly);
+        }
+        if (_currentChar == ',')
+        {
+            token = new (",", _currentLineNumber, _currentColumnNumber, TokenType.Comma);
         }
         if (_currentChar == '"')
         {
@@ -233,6 +238,5 @@ public class Lexer
 
         _currentPosition = _readPosition;
         _readPosition++;
-        
     }
 }

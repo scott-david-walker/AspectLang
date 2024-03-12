@@ -30,5 +30,7 @@ public enum TokenType
     LeftCurly,
     RightCurly,
     Else,
-    Return
+    Return,
+    Function,
+    Comma
 }

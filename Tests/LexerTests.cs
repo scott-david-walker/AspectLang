@@ -57,6 +57,8 @@ public class LexerTests
     [InlineData("{", TokenType.LeftCurly)]
     [InlineData("}", TokenType.RightCurly)]
     [InlineData("return", TokenType.Return)]
+    [InlineData("fn", TokenType.Function)]
+    [InlineData(",", TokenType.Comma)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

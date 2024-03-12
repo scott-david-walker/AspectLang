@@ -3,7 +3,7 @@ using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using FluentAssertions;
 
-namespace ParserTests;
+namespace ParserTests.ParserTests;
 
 public class ParserTests
 {
@@ -303,6 +303,7 @@ public class ParserTests
         node!.Value.Should()
             .BeAssignableTo<Identifier>();
     }
+    
 
     // [Theory]
     // [InlineData("true", true)]

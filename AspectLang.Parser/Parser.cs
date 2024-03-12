@@ -174,11 +174,34 @@ public class Parser
                 return ParseReturnStatement();
             case TokenType.If:
                 return ParseIfStatement();
+            case TokenType.Function:
+                return ParseFunction();
         }
 
         return ParseExpressionStatement();
     }
 
+    private FunctionDeclarationStatement ParseFunction()
+    {
+        var statement = new FunctionDeclarationStatement();
+        statement.Token = _currentToken;
+        AssertNextToken(TokenType.Identifier);
+        statement.Name = _currentToken.Literal;
+        AssertNextToken(TokenType.LeftParen);
+        while (_peekToken.TokenType != TokenType.RightParen)
+        {
+            GetNext();
+            var argument = ParseExpression(Priority.Lowest);
+            statement.Arguments.Add(argument);
+            if (_peekToken.TokenType != TokenType.RightParen)
+            {
+                AssertNextToken(TokenType.Comma);
+            }
+        }
+        AssertNextToken(TokenType.RightParen);
+        statement.Body = ParseBlockStatement();
+        return statement;
+    }
     private IfStatement ParseIfStatement()
     {
         AssertNextToken(TokenType.LeftParen);
@@ -249,7 +272,7 @@ public class Parser
     {
         if (!_prefixParseFunctions.ContainsKey(_currentToken.TokenType))
         {
-            throw new ParserException($"No prefix parse function found for token {_currentToken.Literal}",
+            throw new ParserException($"Unable to parse expression {_currentToken.Literal}",
                 _currentToken.LineNumber, _currentToken.ColumnPosition);
             
         }
