@@ -13,7 +13,6 @@ public class VariableAssignmentNode : IStatement
     }
     public VariableDeclarationNode VariableDeclarationNode { get; }
     public IExpression Expression { get; }
-    public SymbolScope Scope { get; set; }
     public Token Token { get; }
 
     public void Accept(IVisitor visitor)

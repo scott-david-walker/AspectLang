@@ -1,7 +1,6 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler.ReturnableObjects;
-using AspectLang.Parser.VirtualMachine;
 using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
@@ -129,7 +128,7 @@ public class Compiler : IVisitor
     public void Visit(VariableAssignmentNode variableAssignment)
     {
         variableAssignment.Expression.Accept(this);
-        Symbol symbol = null;
+        Symbol symbol;
         if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
         {
             symbol = _scope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
@@ -139,28 +138,13 @@ public class Compiler : IVisitor
             symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
         }
         
-        if (symbol.Scope == SymbolScope.Local)
-        {
-            Emit(OpCode.SetLocal, [symbol.Index]);
-        }
-        else
-        {
-            Emit(OpCode.SetGlobal, [symbol.Index]);
-        }
+        Emit(OpCode.SetLocal, [symbol.Index]);
     }
 
     public void Visit(Identifier identifier)
     {
         var symbol = FindVariableInScope(identifier.Name);
-
-        if (symbol.Scope == SymbolScope.Local)
-        {
-            Emit(OpCode.GetLocal, [symbol.Index]);
-        }
-        else
-        {
-            Emit(OpCode.GetGlobal, [symbol.Index]);
-        }
+        Emit(OpCode.GetLocal, [symbol.Index]);
     }
 
     private Symbol FindVariableInScope(string identifier)

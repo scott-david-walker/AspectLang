@@ -8,7 +8,6 @@ public class Vm
 {
     private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
-    private readonly List<IReturnableObject> _globals = [];
     private readonly Stack<StackFrame> _stack = new();
     private StackFrame _currentFrame = new();
     public int InstructionPointer { get; set; }
@@ -27,8 +26,6 @@ public class Vm
         { OpCode.Negate, new NegateOperation() },
         { OpCode.JumpWhenFalse, new JumpWhenFalse() },
         { OpCode.Jump, new JumpOperation() },
-        { OpCode.SetGlobal, new SetGlobalOperation() },
-        { OpCode.GetGlobal, new GetGlobalOperation() },
         { OpCode.Return, new ReturnOperation() },
         { OpCode.EnterScope, new EnterScopeOperation() },
         { OpCode.ExitScope, new ExitScopeOperation() },
@@ -81,29 +78,9 @@ public class Vm
     {
         return _constants[index];
     }
-
-    public void SetGlobal(IReturnableObject returnableObject, int location)
-    {
-        var exists = _globals.ElementAtOrDefault(location);
-        if (exists != null)
-        {
-            _globals[location] = returnableObject;
-        }
-        else
-        {
-            _globals.Add(returnableObject);
-        }
-    }
-    
-    public void GetGlobal(int globalLocation)
-    {
-        Push(_globals[globalLocation]);
-    }
-    
     public void SetLocal(IReturnableObject returnableObject, int location)
     {
         _currentFrame.SetLocalVariable(returnableObject, location);
-     
     }
     
     public void GetLocal(int localLocation)
@@ -161,26 +138,5 @@ internal class ReturnOperation : IOperation
     public void Execute(Vm vm, List<Operand> operands)
     {
         
-    }
-}
-
-internal class SetGlobalOperation : IOperation
-{
-    public void Execute(Vm vm, List<Operand> operands)
-    {
-        var operand = operands[0];
-        var location = operand.Reference;
-        var expression = vm.Pop();
-        vm.SetGlobal(expression, location.Value);
-    }
-}
-
-internal class GetGlobalOperation : IOperation
-{
-    public void Execute(Vm vm, List<Operand> operands)
-    {
-        var operand = operands[0];
-        var location = operand.Reference;
-        vm.GetGlobal(location.Value);
     }
 }

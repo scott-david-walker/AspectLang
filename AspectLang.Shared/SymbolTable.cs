@@ -3,13 +3,7 @@ namespace AspectLang.Shared;
 public class SymbolTable
 {
     private readonly Dictionary<string, Symbol> _store = new();
-
-    public Symbol Define(string s, SymbolScope symbolScope)
-    {
-        var symbol = new Symbol(s, symbolScope, _store.Count);
-        _store[s] = symbol;
-        return symbol;
-    }
+    
     public Symbol Define(string s)
     {
         if (Exists(s))
@@ -18,7 +12,7 @@ public class SymbolTable
             _store[s] = symbol;
             return symbol;
         }
-        var newSymbol = new Symbol(s, SymbolScope.Global, _store.Count);
+        var newSymbol = new Symbol(s, _store.Count);
         _store[s] = newSymbol;
         return newSymbol;
     }

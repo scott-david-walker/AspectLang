@@ -78,7 +78,6 @@ public class Analyser : IVisitor
     public void Visit(VariableAssignmentNode variableAssignment)
     {
         variableAssignment.Expression.Accept(this);
-        var symbolScope = _scopeCount == 0 ? SymbolScope.Global : SymbolScope.Local;
         var exists = false;
         var scope = _currentScope;
         while (scope != null)
@@ -100,15 +99,13 @@ public class Analyser : IVisitor
                     $"Variable with name {variableAssignment.VariableDeclarationNode.Name} already exists",
                     variableAssignment.Token);
             }
-            variableAssignment.Scope = symbolScope;
-            _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name, symbolScope);
+            _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
         }
         else
         {
             if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
             {
-                variableAssignment.Scope = symbolScope;
-                _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name, symbolScope);
+                _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
             }
             else
             {
@@ -121,7 +118,6 @@ public class Analyser : IVisitor
 
     public void Visit(Identifier identifier)
     {
-        var symbolScope = _scopeCount == 0 ? SymbolScope.Global : SymbolScope.Local;
         var exists = false;
         var scope = _currentScope;
         while (scope != null)
@@ -135,17 +131,12 @@ public class Analyser : IVisitor
             scope = scope.Parent;
         }
 
-        if (exists)
-        {
-            identifier.Scope = symbolScope;
-        }
-        else
+        if (!exists)
         {
             throw new ParserException(
                 $"Variable with name {identifier.Name} does not exist",
                 identifier.Token);
         }
-
     }
 
     public void Visit(ReturnStatement returnStatement)

@@ -16,8 +16,7 @@ public enum OpCode : byte
     Negate,
     JumpWhenFalse,
     Jump,
-    SetGlobal,
-    GetGlobal,
+
     Return,
     EnterScope,
     ExitScope,
@@ -32,8 +31,6 @@ public static class DefinitionExtensions
         { OpCode.Constant, 2},
         { OpCode.JumpWhenFalse, 2},
         { OpCode.Jump, 2},
-        { OpCode.GetGlobal, 2},
-        { OpCode.SetGlobal, 2},
         { OpCode.GetLocal, 2},
         { OpCode.SetLocal, 2},
     };
