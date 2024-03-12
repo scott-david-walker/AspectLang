@@ -21,7 +21,8 @@ public enum OpCode : byte
     EnterScope,
     ExitScope,
     SetLocal,
-    GetLocal
+    GetLocal,
+    JumpToFunction
 }
 
 public static class DefinitionExtensions
@@ -33,6 +34,7 @@ public static class DefinitionExtensions
         { OpCode.Jump, 2},
         { OpCode.GetLocal, 2},
         { OpCode.SetLocal, 2},
+        { OpCode.JumpToFunction, 2},
     };
 
     public static int FindLength(this OpCode opCode)

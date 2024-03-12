@@ -46,14 +46,48 @@ public class Parser
         _infixParseFunctions.Add(TokenType.NotEqual, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.LessThan, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.GreaterThan, ParseInfixExpression);
+        _infixParseFunctions.Add(TokenType.LeftParen, ParseFunctionCall);
         _lexer = lexer;
         GetNext();
         GetNext();
     }
 
-    private IExpression ParseIdentifier()
+    private IExpression ParseFunctionCall(IExpression identifierExpression)
     {
-        return new Identifier
+        var identifier = identifierExpression as Identifier;
+        var call = new FunctionCall
+        {
+            Name = identifier.Name,
+            Token = _currentToken
+        };
+        call.Args = ParseExpressionList(TokenType.RightParen);
+        return call;
+    }
+
+    private List<IExpression> ParseExpressionList(TokenType token)
+    {
+        var list = new List<IExpression>();
+        if (_peekToken.TokenType == token)
+        {
+            GetNext();
+            return list;
+        }
+        GetNext();
+        list.Add(ParseExpression(Priority.Lowest));
+        while (_peekToken.TokenType == TokenType.Comma)
+        { 
+            GetNext();   
+            GetNext();
+            list.Add(ParseExpression(Priority.Lowest));
+        }
+
+        AssertNextToken(token);
+
+        return list;
+    }
+    private Identifier ParseIdentifier()
+    {
+        return new()
         {
             Token = _currentToken,
             Name = _currentToken.Literal
@@ -168,7 +202,7 @@ public class Parser
         {
             case TokenType.Val:
                 return ParseValStatement();
-            case TokenType.Identifier:
+            case TokenType.Identifier when _peekToken.TokenType != TokenType.LeftParen:
                 return ParseValAssignment(false);
             case TokenType.Return:
                 return ParseReturnStatement();
@@ -191,8 +225,8 @@ public class Parser
         while (_peekToken.TokenType != TokenType.RightParen)
         {
             GetNext();
-            var argument = ParseExpression(Priority.Lowest);
-            statement.Arguments.Add(argument);
+            var argument = ParseIdentifier();
+            statement.Parameters.Add(argument);
             if (_peekToken.TokenType != TokenType.RightParen)
             {
                 AssertNextToken(TokenType.Comma);

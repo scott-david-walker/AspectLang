@@ -83,6 +83,12 @@ public class SetAndReturnVariablesTests
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(100);
     }
 
+    [Fact]
+    public void Test()
+    {
+        var res = Run("fn test(x) {val g = 5; return g;} test(1);");
+
+    }
     private static IReturnableObject Run(string source)
     {
         var lexer = new Lexer(source);

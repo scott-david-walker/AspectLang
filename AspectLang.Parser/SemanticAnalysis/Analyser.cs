@@ -143,4 +143,13 @@ public class Analyser : IVisitor
     {
         returnStatement.Value.Accept(this);
     }
+
+    public void Visit(FunctionDeclarationStatement functionDeclaration)
+    {
+    }
+
+    public void Visit(FunctionCall functionCall)
+    {
+        
+    }
 }

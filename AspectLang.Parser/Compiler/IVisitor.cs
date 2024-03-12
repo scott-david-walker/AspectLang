@@ -18,4 +18,6 @@ public interface IVisitor
     void Visit(VariableAssignmentNode variableAssignment);
     void Visit(Identifier identifier);
     void Visit(ReturnStatement returnStatement);
+    void Visit(FunctionDeclarationStatement functionDeclaration);
+    void Visit(FunctionCall functionCall);
 }

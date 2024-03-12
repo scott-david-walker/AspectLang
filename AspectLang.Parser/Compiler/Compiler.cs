@@ -5,19 +5,74 @@ using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
 
+public class FunctionTable
+{
+    public List<Function> Functions { get; set; } = [];
+}
+
+public class Function
+{
+    public string Name { get; set; }
+    public int ParametersCount { get; set; }
+    public int EntryPoint { get; set; }
+    public int ReturnPoint { get; set; }
+}
+
 public class Compiler : IVisitor
 {
     public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
     private Scope _scope = new(null);
+    private readonly FunctionTable _functionTable = new();
+    private readonly FunctionTable _functionCalls = new();
+    private readonly List<FunctionDeclarationStatement> _functions = [];
 
     public void Compile(INode node)
     {
         node.Accept(this);
         
+        CompileFunctions();
+        UpdateCalls();
         // Should do a conversion to some byte code format tbd
     }
-    
+
+    private void UpdateCalls()
+    {
+        foreach (var function in _functionCalls.Functions)
+        {
+            var f = _functionTable.Functions.FirstOrDefault(t =>
+                t.Name == function.Name && t.ParametersCount == function.ParametersCount);
+
+            if (f == null)
+            {
+                throw new("FUNCTION NOT FOUND");
+            }
+
+            var currentLocation = function.EntryPoint;
+            Instructions[currentLocation].Operands[0].Reference = f.EntryPoint;
+        }
+    }
+    private void CompileFunctions()
+    {
+        foreach (var function in _functions)
+        {
+            var entryPoint = Instructions.Count - 1;
+            foreach (var param in function.Parameters)
+            {
+                var symbol = _scope.SymbolTable.Define(param.Name);
+                Emit(OpCode.SetLocal, [symbol.Index]);
+                param.Accept(this);
+            }
+            function.Body.Accept(this);
+            _functionTable.Functions.Add(new()
+            {
+                Name = function.Name,
+                ParametersCount = function.Parameters.Count,
+                EntryPoint = entryPoint,
+                ReturnPoint = Instructions.Count
+            });
+        }
+    }
     public void Visit(IntegerExpression expression)
     {
         var val = expression.Value;
@@ -166,6 +221,29 @@ public class Compiler : IVisitor
     {
         returnStatement.Value.Accept(this);
         Emit(OpCode.Return);
+    }
+
+    public void Visit(FunctionDeclarationStatement functionDeclaration)
+    {
+        _functions.Add(functionDeclaration);
+    }
+
+    public void Visit(FunctionCall functionCall)
+    {
+        Emit(OpCode.EnterScope);
+        functionCall.Args.ForEach(arg =>
+        {
+            arg.Accept(this);
+        });
+        
+        var location = Emit(OpCode.JumpToFunction, [0]);
+        _functionCalls.Functions.Add(new()
+        {
+            Name = functionCall.Name,
+            ParametersCount = functionCall.Args.Count,
+            EntryPoint = location,
+            ReturnPoint = Instructions.Count
+        });
     }
 
     private void UpdateInstruction(int position, int location)

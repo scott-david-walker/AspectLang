@@ -30,7 +30,8 @@ public class Vm
         { OpCode.EnterScope, new EnterScopeOperation() },
         { OpCode.ExitScope, new ExitScopeOperation() },
         { OpCode.SetLocal, new SetLocalOperation() },
-        { OpCode.GetLocal, new GetLocalOperation() }
+        { OpCode.GetLocal, new GetLocalOperation() },
+        { OpCode.JumpToFunction, new JumpToFunctionOperation() },
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -95,6 +96,14 @@ public class Vm
     public void ExitScope()
     {
         _currentFrame.ExitScope();
+    }
+}
+
+internal class JumpToFunctionOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        vm.InstructionPointer = operands[0].Reference.Value;
     }
 }
 
