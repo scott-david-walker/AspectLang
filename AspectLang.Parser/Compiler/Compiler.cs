@@ -67,7 +67,7 @@ public class Compiler : IVisitor
             {
                 var symbol = _scope.SymbolTable.Define(param.Name);
                 
-                Emit(OpCode.SetLocal, [new(symbol.Index), new(symbol.Name)]);
+                Emit(OpCode.SetLocal, [new(symbol.Name)]);
             }
             foreach (var param in function.Parameters)
             {
@@ -229,13 +229,13 @@ public class Compiler : IVisitor
             symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
         }
         
-        Emit(OpCode.SetLocal, [new(symbol.Index), new(symbol.Name)]);
+        Emit(OpCode.SetLocal, [new(symbol.Name)]);
     }
 
     public void Visit(Identifier identifier)
     {
         var symbol = FindVariableInScope(identifier.Name);
-        Emit(OpCode.GetLocal, [new(symbol.Index), new(symbol.Name)]);
+        Emit(OpCode.GetLocal, [new(symbol.Name)]);
     }
 
     private Symbol FindVariableInScope(string identifier)

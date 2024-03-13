@@ -35,12 +35,12 @@ public class StackFrame(int returnLocation)
         _currentScope = _currentScope.Parent;
     }
 
-    public void GetLocal(int localLocation, string name)
+    public void GetLocal(string name)
     {
         Push(Get(name));
     }
 
-    public void SetLocalVariable(IReturnableObject returnableObject, int location, string name)
+    public void SetLocalVariable(IReturnableObject returnableObject, string name)
     {
         SetOrThrow(name, returnableObject);
     }
