@@ -62,7 +62,8 @@ public class Compiler : IVisitor
             foreach (var param in function.Parameters)
             {
                 var symbol = _scope.SymbolTable.Define(param.Name);
-                Emit(OpCode.SetLocal, [symbol.Index]);
+                
+                Emit(OpCode.SetLocal, [new(symbol.Index), new(symbol.Name)]);
                 param.Accept(this);
             }
             function.Body.Accept(this);
@@ -78,7 +79,7 @@ public class Compiler : IVisitor
     public void Visit(IntegerExpression expression)
     {
         var val = expression.Value;
-        Emit(OpCode.Constant, [AddConstant(new IntegerReturnableObject(val))]);
+        Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(val)))]);
     }
 
     public void Visit(ProgramNode programNode)
@@ -143,7 +144,7 @@ public class Compiler : IVisitor
     public void Visit(StringExpression expression)
     {
         var val = expression.Value;
-        Emit(OpCode.Constant, [AddConstant(new StringReturnableObject(val))]);
+        Emit(OpCode.Constant, [new(AddConstant(new StringReturnableObject(val)))]);
     }
 
     public void Visit(BlockStatement blockStatement)
@@ -169,12 +170,12 @@ public class Compiler : IVisitor
     public void Visit(IfStatement ifStatement)
     {
         ifStatement.Condition.Accept(this);
-        var falsePosition = Emit(OpCode.JumpWhenFalse, [9999]);
+        var falsePosition = Emit(OpCode.JumpWhenFalse, [new(9999)]);
         EnterScope();
         ifStatement.Consequence.Accept(this);
         ExitScope();
         var afterConsequencePosition = Instructions.Count;
-        var jumpToEndOfIfInstructionPosition = Emit(OpCode.Jump, [9999]);
+        var jumpToEndOfIfInstructionPosition = Emit(OpCode.Jump, [new(9999)]);
         var endPosition = afterConsequencePosition;
         if (ifStatement.Alternative != null)
         {
@@ -209,13 +210,13 @@ public class Compiler : IVisitor
             symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
         }
         
-        Emit(OpCode.SetLocal, [symbol.Index]);
+        Emit(OpCode.SetLocal, [new(symbol.Index), new(symbol.Name)]);
     }
 
     public void Visit(Identifier identifier)
     {
         var symbol = FindVariableInScope(identifier.Name);
-        Emit(OpCode.GetLocal, [symbol.Index]);
+        Emit(OpCode.GetLocal, [new(symbol.Index), new(symbol.Name)]);
     }
 
     private Symbol FindVariableInScope(string identifier)
@@ -251,7 +252,7 @@ public class Compiler : IVisitor
             arg.Accept(this);
         });
         
-        var location = Emit(OpCode.JumpToFunction, [0, 0]);
+        var location = Emit(OpCode.JumpToFunction, [new(0), new(0)]);
         _functionCalls.Functions.Add(new()
         {
             Name = functionCall.Name,
@@ -272,7 +273,7 @@ public class Compiler : IVisitor
         Emit(opcode, []);
     }
     
-    private int Emit(OpCode opcode, List<int> operands)
+    private int Emit(OpCode opcode, List<Operand> operands)
     {
         //var instructions = ByteCode.Create(opcode, operands);
         var instruction = CreateInstruction(opcode, operands);
@@ -281,51 +282,17 @@ public class Compiler : IVisitor
         return position;
     }
 
-    private static Instruction CreateInstruction(OpCode opCode, List<int> operands)
+    private static Instruction CreateInstruction(OpCode opCode, List<Operand> operands)
     {
         if (!operands.Any())
         {
             return new() { OpCode = opCode };
         }
 
-        //TODO: This is horrid
-        var length = opCode.FindLength();
-        if (opCode == OpCode.JumpToFunction)
-        {
-            var o = new Operand
-            {
-                OperandType = OperandType.Pointer,
-                Reference = operands[0]
-            };
-            var o2 = new Operand
-            {
-                OperandType = OperandType.Pointer,
-                Reference = operands[1]
-            };
-            return new()
-            {
-                OpCode = opCode,
-                Operands = [o, o2]
-            };
-        }
-        if (length == 0)
-        {
-            throw new("Expected opcode to have memory allocated for operands");
-        }
-        if (operands.Count > 1)
-        {
-            // We only ever expect a constant to point to an index. In reality, the length should only be one..
-            throw new("Expected opcode to contain index of constant. Length too long");
-        }
-        var operand = new Operand
-        {
-            OperandType = OperandType.Pointer,
-            Reference = operands[0]
-        };
         return new()
         {
             OpCode = opCode,
-            Operands = [operand]
+            Operands = operands
         };
     }
     

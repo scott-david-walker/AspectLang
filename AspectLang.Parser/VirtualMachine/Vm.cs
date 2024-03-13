@@ -93,14 +93,14 @@ public class Vm
     {
         return _constants[index];
     }
-    public void SetLocal(IReturnableObject returnableObject, int location)
+    public void SetLocal(IReturnableObject returnableObject, int location, string name)
     {
-        _currentFrame.SetLocalVariable(returnableObject, location);
+        _currentFrame.SetLocalVariable(returnableObject, location, name);
     }
     
-    public void GetLocal(int localLocation)
+    public void GetLocal(int localLocation, string name)
     {
-        _currentFrame.GetLocal(localLocation);
+        _currentFrame.GetLocal(localLocation, name);
     }
 
     public void EnterScope()
@@ -131,7 +131,7 @@ internal class GetLocalOperation : IOperation
     {
         var operand = operands[0];
         var location = operand.Reference;
-        vm.GetLocal(location.Value);
+        vm.GetLocal(location.Value, operands[1].Name);
     }
 }
 
@@ -142,7 +142,7 @@ internal class SetLocalOperation : IOperation
         var operand = operands[0];
         var location = operand.Reference;
         var expression = vm.Pop();
-        vm.SetLocal(expression, location.Value);
+        vm.SetLocal(expression, location.Value, operands[1].Name);
     }
 }
 

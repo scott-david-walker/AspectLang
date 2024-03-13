@@ -3,18 +3,20 @@ using AspectLang.Shared;
 
 namespace AspectLang.Parser.VirtualMachine;
 
-public class StackFrame
-{
-    public readonly int ReturnLocation;
-    private readonly List<IReturnableObject> _localVariables = [];
-    private readonly Stack<IReturnableObject> _stack = new();
-    
-    private Scope? _currentScope;
 
-    public StackFrame(int returnLocation)
+public class StackFrame(int returnLocation)
+{
+    private class TestScope(TestScope? parent)
     {
-        ReturnLocation = returnLocation;
+        public readonly Dictionary<string, IReturnableObject> LocalVariables = [];
+        public TestScope? Parent { get; set; } = parent;
     }
+
+    public readonly int ReturnLocation = returnLocation;
+    private readonly Stack<IReturnableObject> _stack = new();
+
+    private TestScope _currentScope = new(null);
+
     public void Push(IReturnableObject returnableObject)
     {
         _stack.Push(returnableObject);
@@ -33,7 +35,7 @@ public class StackFrame
         }
         else
         {
-            var newScope = new Scope(_currentScope);
+            var newScope = new TestScope(_currentScope);
             _currentScope = newScope;
         }
     }
@@ -43,21 +45,45 @@ public class StackFrame
         _currentScope = _currentScope!.Parent;
     }
 
-    public void GetLocal(int localLocation)
+    public void GetLocal(int localLocation, string name)
     {
-        Push(_localVariables[localLocation]);
+        Push(Get(name));
     }
 
-    public void SetLocalVariable(IReturnableObject returnableObject, int location)
+    public void SetLocalVariable(IReturnableObject returnableObject, int location, string name)
     {
-        var exists = _localVariables.ElementAtOrDefault(location);
-        if (exists != null)
+        SetOrThrow(name, returnableObject);
+    }
+
+    private IReturnableObject Get(string name)
+    {
+        var s = _currentScope;
+        while (s != null)
         {
-            _localVariables[location] = returnableObject;
+            if(s.LocalVariables.ContainsKey(name))
+            {
+                return s.LocalVariables[name];
+            }
+
+            s = s.Parent;
         }
-        else
+
+        throw new("No variable found");
+    }
+    private void SetOrThrow(string name, IReturnableObject returnableObject)
+    {
+        var s = _currentScope;
+        while (s != null)
         {
-            _localVariables.Add(returnableObject);
+            if(s.LocalVariables.ContainsKey(name))
+            {
+                s.LocalVariables[name] = returnableObject;
+                return;
+            }
+
+            s = s.Parent;
         }
+
+        _currentScope.LocalVariables[name] = returnableObject;
     }
 }

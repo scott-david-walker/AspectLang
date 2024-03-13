@@ -15,7 +15,7 @@ public class ReadConstantTests
         var constants = new List<IReturnableObject> { left };
         var instructions = new List<Instruction> { new(OpCode.Constant) };
         var vm = new Vm(instructions, constants);
-        new ReadConstantOperation().Execute(vm, [new() { OperandType = OperandType.Pointer, Reference = 0}]);
+        new ReadConstantOperation().Execute(vm, [new(0)]);
         var result = vm.Pop();
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(100);
     }
