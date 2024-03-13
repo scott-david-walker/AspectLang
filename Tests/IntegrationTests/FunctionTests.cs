@@ -64,4 +64,11 @@ public class FunctionTests : TestBase
         var res = Run("fn test(x, y, z) { return (x + y) * z; } test(3, 2, 4);");
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(20);
     }
+    
+    [Fact]
+    public void StringArguments()
+    {
+        var res = Run("fn test(x, y) { return x + y; } test(\"scott\", \"here\");");
+        res.Should().BeAssignableTo<StringReturnableObject>().Which.Value.Should().Be("scotthere");
+    }
 }

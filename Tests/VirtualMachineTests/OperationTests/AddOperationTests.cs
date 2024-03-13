@@ -28,8 +28,8 @@ public class AddOperationTests
     [Fact]
     public void CanAddTwoStrings()
     {
-        var left = new StringReturnableObject("test");
-        var right = new StringReturnableObject("string");
+        var left = new StringReturnableObject("string");
+        var right = new StringReturnableObject("test");
         var instructions = new List<Instruction> { new(OpCode.Sum) };
         var vm = new Vm(instructions, []);
         vm.Push(right);

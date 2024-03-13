@@ -9,8 +9,8 @@ public class AddOperation : IOperation
     {
         var right = vm.Pop();
         var left = vm.Pop();
-        var rightAddable = (IAddable)right;
-        var ret = rightAddable.Add(left);
+        var leftAddable = (IAddable)left;
+        var ret = leftAddable.Add(right);
         vm.Push(ret);
     }
 }
