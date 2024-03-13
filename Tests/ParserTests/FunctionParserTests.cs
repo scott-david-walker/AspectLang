@@ -1,19 +1,14 @@
-using AspectLang.Parser;
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
-using FluentAssertions;
 
 namespace ParserTests.ParserTests;
 
-public class FunctionParserTests
+public class FunctionParserTests : TestBase
 {
     [Fact]
     public void CanParseNoArgumentFunction()
     {
-        var lexer = new Lexer("fn test() {val x = 0;}"); 
-        var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().BeEmpty();
+        var result = Parse("fn test() {val x = 0;}"); 
         result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<FunctionDeclarationStatement>();
         var node = result.ProgramNode.StatementNodes[0] as FunctionDeclarationStatement;
         node!.Name.Should().Be("test");
@@ -24,10 +19,7 @@ public class FunctionParserTests
     [Fact]
     public void CanParseSingleArgumentFunction()
     {
-        var lexer = new Lexer(@"fn test(y) {val x = 0;}"); 
-        var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().BeEmpty();
+        var result = Parse("fn test(y) {val x = 0;}"); 
         result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<FunctionDeclarationStatement>();
         var node = result.ProgramNode.StatementNodes[0] as FunctionDeclarationStatement;
         node!.Name.Should().Be("test");
@@ -38,10 +30,7 @@ public class FunctionParserTests
     [Fact]
     public void CanParseMultipleArgumentFunction()
     {
-        var lexer = new Lexer("fn test(x, y) {val x = 0;}"); 
-        var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().BeEmpty();
+        var result = Parse("fn test(x, y) {val x = 0;}"); 
         result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<FunctionDeclarationStatement>();
         var node = result.ProgramNode.StatementNodes[0] as FunctionDeclarationStatement;
         node!.Name.Should().Be("test");
@@ -54,10 +43,7 @@ public class FunctionParserTests
     [Fact]
     public void CanParseCall()
     {
-        var lexer = new Lexer("test(1,2,3);"); 
-        var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().BeEmpty();
+        var result = Parse("test(1,2,3);"); 
         result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<ExpressionStatement>();
         var expressionStatement = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
         var functionCall = expressionStatement.Expression as FunctionCall;
@@ -67,5 +53,4 @@ public class FunctionParserTests
         functionCall.Args[1].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(2);
         functionCall.Args[2].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(3);
     }
-    
 }

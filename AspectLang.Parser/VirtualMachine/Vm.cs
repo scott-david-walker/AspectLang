@@ -30,6 +30,7 @@ public class Vm
         { OpCode.EnterScope, new EnterScopeOperation() },
         { OpCode.ExitScope, new ExitScopeOperation() },
         { OpCode.SetLocal, new SetLocalOperation() },
+        { OpCode.SetLocalArgument, new SetLocalArgumentOperation() },
         { OpCode.GetLocal, new GetLocalOperation() },
         { OpCode.JumpToFunction, new JumpToFunctionOperation() },
     };
@@ -48,6 +49,11 @@ public class Vm
             if (instruction.OpCode == OpCode.Halt)
             {
                 break;
+            }
+
+            if (instruction.OpCode == OpCode.SetLocal)
+            {
+                
             }
             if (_operations.TryGetValue(instruction.OpCode, out var op))
             {
@@ -113,15 +119,32 @@ public class Vm
     }
 }
 
+internal class SetLocalArgumentOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        throw new NotImplementedException();
+    }
+}
+
 internal class JumpToFunctionOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
         vm.InstructionPointer = operands[0].Reference.Value;
         var returnLocation = operands[1].Reference.Value;
-        var arg = vm.Pop();
+        var argCount = operands[2].Reference.Value;
+        var x = new List<IReturnableObject>();
+        for (int i = 0; i < argCount; i++)
+        {
+            x.Add(vm.Pop());
+        }
         vm.PushFrame(returnLocation);
-        vm.Push(arg);
+        //x.Reverse();
+        foreach (var y in x)
+        {
+            vm.Push(y);
+        }
     }
 }
 

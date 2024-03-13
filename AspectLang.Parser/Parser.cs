@@ -100,7 +100,7 @@ public class Parser
         AssertNextToken(TokenType.LeftCurly);
         if (_peekToken.TokenType == TokenType.RightCurly)
         {
-            throw new ParserException("Empty block statments are not allowed", _peekToken);
+            throw new ParserException("Empty block statements are not allowed", _peekToken);
         }
         GetNext();
 

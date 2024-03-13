@@ -59,11 +59,18 @@ public class Compiler : IVisitor
         {
             EnterScope();
             var entryPoint = Instructions.Count - 1;
+            
+            // could we change all this so that arguments are a different opcode
+            
+            //double for each because we only want to do a GETLOCAL after the arguments are set
             foreach (var param in function.Parameters)
             {
                 var symbol = _scope.SymbolTable.Define(param.Name);
                 
                 Emit(OpCode.SetLocal, [new(symbol.Index), new(symbol.Name)]);
+            }
+            foreach (var param in function.Parameters)
+            {
                 param.Accept(this);
             }
             function.Body.Accept(this);
@@ -252,7 +259,7 @@ public class Compiler : IVisitor
             arg.Accept(this);
         });
         
-        var location = Emit(OpCode.JumpToFunction, [new(0), new(0)]);
+        var location = Emit(OpCode.JumpToFunction, [new(0), new(0), new(functionCall.Args.Count)]);
         _functionCalls.Functions.Add(new()
         {
             Name = functionCall.Name,

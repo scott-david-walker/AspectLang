@@ -1,21 +1,18 @@
 using AspectLang.Parser.Compiler.ReturnableObjects;
-using AspectLang.Shared;
 
-namespace AspectLang.Parser.VirtualMachine;
-
-
+namespace AspectLang.Parser.VirtualMachine; 
 public class StackFrame(int returnLocation)
 {
-    private class TestScope(TestScope? parent)
+    private class FrameScope(FrameScope? parent)
     {
         public readonly Dictionary<string, IReturnableObject> LocalVariables = [];
-        public TestScope? Parent { get; set; } = parent;
+        public FrameScope? Parent { get; } = parent;
     }
 
     public readonly int ReturnLocation = returnLocation;
     private readonly Stack<IReturnableObject> _stack = new();
 
-    private TestScope _currentScope = new(null);
+    private FrameScope _currentScope = new(null);
 
     public void Push(IReturnableObject returnableObject)
     {
@@ -29,20 +26,13 @@ public class StackFrame(int returnLocation)
 
     public void EnterScope()
     {
-        if (_currentScope == null)
-        {
-            _currentScope = new(null);
-        }
-        else
-        {
-            var newScope = new TestScope(_currentScope);
-            _currentScope = newScope;
-        }
+        var newScope = new FrameScope(_currentScope);
+        _currentScope = newScope;
     }
 
     public void ExitScope()
     {
-        _currentScope = _currentScope!.Parent;
+        _currentScope = _currentScope.Parent;
     }
 
     public void GetLocal(int localLocation, string name)

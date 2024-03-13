@@ -200,28 +200,25 @@ public class Lexer
             _currentLineNumber++;
             _currentColumnNumber = 0;
             ReadNextCharacter();
+            EatWhitespace();
         }
 
         if (_currentChar == '\t')
         {
             _currentColumnNumber += 3; // next character will bump it to 4
             ReadNextCharacter();
+            EatWhitespace();
         }
         if (_currentChar == '\r')
         {
-            _currentLineNumber++;
-            _currentColumnNumber = 0;
             ReadNextCharacter();
-            if (_currentChar == '\n')
-            {
-                // do nothing as we've already handled.
-            }
+            EatWhitespace();
         }
 
         while (_currentChar == 32)
         {
             ReadNextCharacter();
-
+            EatWhitespace();
         }
     }
     private void ReadNextCharacter()
