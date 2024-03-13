@@ -16,13 +16,13 @@ public enum OpCode : byte
     Negate,
     JumpWhenFalse,
     Jump,
-
     Return,
     EnterScope,
     ExitScope,
     SetLocal,
     GetLocal,
-    JumpToFunction
+    JumpToFunction,
+    Halt
 }
 
 public static class DefinitionExtensions

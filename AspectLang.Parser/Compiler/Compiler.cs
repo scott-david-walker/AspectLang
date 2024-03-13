@@ -30,7 +30,7 @@ public class Compiler : IVisitor
     public void Compile(INode node)
     {
         node.Accept(this);
-        
+        Emit(OpCode.Halt);
         CompileFunctions();
         UpdateCalls();
         // Should do a conversion to some byte code format tbd
@@ -50,12 +50,14 @@ public class Compiler : IVisitor
 
             var currentLocation = function.EntryPoint;
             Instructions[currentLocation].Operands[0].Reference = f.EntryPoint;
+            Instructions[currentLocation].Operands[1].Reference = currentLocation;
         }
     }
     private void CompileFunctions()
     {
         foreach (var function in _functions)
         {
+            EnterScope();
             var entryPoint = Instructions.Count - 1;
             foreach (var param in function.Parameters)
             {
@@ -146,31 +148,45 @@ public class Compiler : IVisitor
 
     public void Visit(BlockStatement blockStatement)
     {
-        Emit(OpCode.EnterScope);
-        var scope = new Scope(_scope);
-        _scope = scope;
         foreach (var statement in blockStatement.Statements)
         {
             statement.Accept(this);
         }
-
-        _scope = scope.Parent;
-        Emit(OpCode.ExitScope);
     }
 
+    private void EnterScope()
+    {
+        Emit(OpCode.EnterScope);
+        var scope = new Scope(_scope);
+        _scope = scope;
+    }
+
+    private void ExitScope()
+    {
+        _scope = _scope.Parent;
+        Emit(OpCode.ExitScope);
+    }
     public void Visit(IfStatement ifStatement)
     {
         ifStatement.Condition.Accept(this);
         var falsePosition = Emit(OpCode.JumpWhenFalse, [9999]);
+        EnterScope();
         ifStatement.Consequence.Accept(this);
+        ExitScope();
         var afterConsequencePosition = Instructions.Count;
         var jumpToEndOfIfInstructionPosition = Emit(OpCode.Jump, [9999]);
         var endPosition = afterConsequencePosition;
         if (ifStatement.Alternative != null)
         {
+            EnterScope();
             ifStatement.Alternative.Accept(this);
+            ExitScope();
             endPosition = Instructions.Count;
             UpdateInstruction(falsePosition, afterConsequencePosition);
+        }
+        else
+        {
+            UpdateInstruction(falsePosition, endPosition);
         }
         UpdateInstruction(jumpToEndOfIfInstructionPosition, endPosition);
     }
@@ -230,13 +246,12 @@ public class Compiler : IVisitor
 
     public void Visit(FunctionCall functionCall)
     {
-        Emit(OpCode.EnterScope);
         functionCall.Args.ForEach(arg =>
         {
             arg.Accept(this);
         });
         
-        var location = Emit(OpCode.JumpToFunction, [0]);
+        var location = Emit(OpCode.JumpToFunction, [0, 0]);
         _functionCalls.Functions.Add(new()
         {
             Name = functionCall.Name,
@@ -275,6 +290,24 @@ public class Compiler : IVisitor
 
         //TODO: This is horrid
         var length = opCode.FindLength();
+        if (opCode == OpCode.JumpToFunction)
+        {
+            var o = new Operand
+            {
+                OperandType = OperandType.Pointer,
+                Reference = operands[0]
+            };
+            var o2 = new Operand
+            {
+                OperandType = OperandType.Pointer,
+                Reference = operands[1]
+            };
+            return new()
+            {
+                OpCode = opCode,
+                Operands = [o, o2]
+            };
+        }
         if (length == 0)
         {
             throw new("Expected opcode to have memory allocated for operands");

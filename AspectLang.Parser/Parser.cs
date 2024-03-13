@@ -96,6 +96,7 @@ public class Parser
 
     private BlockStatement ParseBlockStatement()
     {
+        var nested = 0;
         AssertNextToken(TokenType.LeftCurly);
         if (_peekToken.TokenType == TokenType.RightCurly)
         {
@@ -107,11 +108,19 @@ public class Parser
         while (_peekToken.TokenType != TokenType.RightCurly)
         {
             var statement = ParseStatement();
+            if (statement is IfStatement or BlockStatement)
+            {
+                nested++;
+            }
             block.Statements.Add(statement);
             if (_peekToken.TokenType == TokenType.SemiColon)
             {
                 GetNext();
             }
+            // if (_currentToken.TokenType == TokenType.RightCurly)
+            // {
+            //     GetNext();
+            // }
         }
         AssertNextToken(TokenType.RightCurly);
         return block;
@@ -194,7 +203,7 @@ public class Parser
     }
     private IStatement ParseStatement()
     {
-        if (_currentToken.TokenType == TokenType.SemiColon)
+        if (_currentToken.TokenType == TokenType.SemiColon || _currentToken.TokenType == TokenType.RightCurly)
         {
             GetNext();
         }

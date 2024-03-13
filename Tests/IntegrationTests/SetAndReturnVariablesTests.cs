@@ -79,16 +79,38 @@ public class SetAndReturnVariablesTests
     [Fact]
     public void WillReturnCorrectValueFromNestedIfs()
     {
-        var res = Run("val x = 5; if(1 == 1) { x = 100; if(2 == 2) { if(3 == 3) { return x; } } }");
+        var res = Run("val x = 5; if(1 == 1) { x = 100; if(2 == 2) { if(3 == 3) { return x; } } } ");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(100);
+    }
+    
+    [Fact]
+    public void NestedBlock()
+    {
+        var res = Run("if(1 == 1) { val x = 100; if(2 == 2) { return x; } val g = 5;} ");
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(100);
     }
 
     [Fact]
     public void Test()
     {
-        var res = Run("fn test(x) {val g = 5; return g;} test(1);");
-
+        var res = Run("fn test(x) {val g = 5; x = 2; return g;} val b = test(1); return b;");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(5);
     }
+    
+    [Fact]
+    public void Scope()
+    {
+        var res = Run("val x = 5; if(1 == 1) { val g = x; g = 6; } return x;");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(5);
+    }
+    
+    [Fact]
+    public void Recursion()
+    {
+        var res = Run("fn factorial(x) { if(x == 0) { return 1;}  return x * factorial(x - 1); } return factorial(6);");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(720);
+    }
+
     private static IReturnableObject Run(string source)
     {
         var lexer = new Lexer(source);

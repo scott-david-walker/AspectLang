@@ -9,7 +9,7 @@ public class Vm
     private readonly List<Instruction> _instructions;
     private readonly List<IReturnableObject> _constants;
     private readonly Stack<StackFrame> _stack = new();
-    private StackFrame _currentFrame = new();
+    private StackFrame _currentFrame = new(0);
     public int InstructionPointer { get; set; }
     private readonly Dictionary<OpCode, IOperation> _operations = new()
     {
@@ -37,6 +37,7 @@ public class Vm
     {
         _instructions = instructions;
         _constants = constants;
+        _stack.Push(_currentFrame);
     }
 
     public IReturnableObject Run()
@@ -44,6 +45,10 @@ public class Vm
         for (InstructionPointer = 0; InstructionPointer < _instructions.Count; InstructionPointer++)
         {
             var instruction = _instructions[InstructionPointer];
+            if (instruction.OpCode == OpCode.Halt)
+            {
+                break;
+            }
             if (_operations.TryGetValue(instruction.OpCode, out var op))
             {
                 op.Execute(this, instruction.Operands);
@@ -63,16 +68,25 @@ public class Vm
         return _currentFrame.Pop();
     }
 
-    private void PushFrame()
+    public void PushFrame(int returnLocation)
     {
-        var frame = new StackFrame();
+        var frame = new StackFrame(returnLocation);
         _currentFrame = frame;
         _stack.Push(frame);
     }
 
-    private StackFrame PopFrame()
+    public void PopFrame()
     {
-        return _stack.Pop();
+        if (_stack.Count > 1)
+        {
+            _stack.Pop();
+            _currentFrame = _stack.Peek();
+        }
+    }
+
+    public int ReturnLocation()
+    {
+        return _currentFrame.ReturnLocation;
     }
     
     public IReturnableObject GetConstant(int index)
@@ -104,6 +118,10 @@ internal class JumpToFunctionOperation : IOperation
     public void Execute(Vm vm, List<Operand> operands)
     {
         vm.InstructionPointer = operands[0].Reference.Value;
+        var returnLocation = operands[1].Reference.Value;
+        var arg = vm.Pop();
+        vm.PushFrame(returnLocation);
+        vm.Push(arg);
     }
 }
 
@@ -113,7 +131,8 @@ internal class GetLocalOperation : IOperation
     {
         var operand = operands[0];
         var location = operand.Reference;
-        vm.GetLocal(location.Value);    }
+        vm.GetLocal(location.Value);
+    }
 }
 
 internal class SetLocalOperation : IOperation
@@ -146,6 +165,13 @@ internal class ReturnOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
-        
+        var result = vm.Pop();
+        var returnLocation = vm.ReturnLocation();
+        vm.PopFrame();
+        vm.Push(result);
+        if (returnLocation != 0)
+        {
+            vm.InstructionPointer = returnLocation;
+        }
     }
 }

@@ -5,9 +5,16 @@ namespace AspectLang.Parser.VirtualMachine;
 
 public class StackFrame
 {
+    public readonly int ReturnLocation;
     private readonly List<IReturnableObject> _localVariables = [];
     private readonly Stack<IReturnableObject> _stack = new();
+    
     private Scope? _currentScope;
+
+    public StackFrame(int returnLocation)
+    {
+        ReturnLocation = returnLocation;
+    }
     public void Push(IReturnableObject returnableObject)
     {
         _stack.Push(returnableObject);
