@@ -23,6 +23,10 @@ public class Vm
         { OpCode.False, new FalseOperation() },
         { OpCode.Equality, new EqualityOperation() },
         { OpCode.NotEqual, new NotEqualOperation() },
+        { OpCode.LessThan, new LessThanOperation() },
+        { OpCode.LessThanEqualTo, new LessThanEqualToOperation() },
+        { OpCode.GreaterThan, new GreaterThanOperation() },
+        { OpCode.GreaterThanEqualTo, new GreaterThanEqualToOperation() },
         { OpCode.Negate, new NegateOperation() },
         { OpCode.JumpWhenFalse, new JumpWhenFalse() },
         { OpCode.Jump, new JumpOperation() },
@@ -116,14 +120,6 @@ public class Vm
     public void ExitScope()
     {
         _currentFrame.ExitScope();
-    }
-}
-
-internal class SetLocalArgumentOperation : IOperation
-{
-    public void Execute(Vm vm, List<Operand> operands)
-    {
-        throw new NotImplementedException();
     }
 }
 

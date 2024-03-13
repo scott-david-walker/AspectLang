@@ -59,6 +59,10 @@ public class LexerTests
     [InlineData("return", TokenType.Return)]
     [InlineData("fn", TokenType.Function)]
     [InlineData(",", TokenType.Comma)]
+    [InlineData("<", TokenType.LessThan)]
+    [InlineData(">", TokenType.GreaterThan)]
+    [InlineData(">=", TokenType.GreaterThanEqualTo)]
+    [InlineData("<=", TokenType.LessThanEqualTo)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

@@ -126,6 +126,18 @@ public class Compiler : IVisitor
             case "!=":
                 Emit(OpCode.NotEqual);
                 break;
+            case "<":
+                Emit(OpCode.LessThan);
+                break;
+            case "<=":
+                Emit(OpCode.LessThanEqualTo);
+                break;
+            case ">":
+                Emit(OpCode.GreaterThan);
+                break;
+            case ">=":
+                Emit(OpCode.GreaterThanEqualTo);
+                break;
         }
     }
 

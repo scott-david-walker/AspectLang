@@ -69,6 +69,18 @@ public class FlowTests
     [Theory]
     [InlineData("!false", true)]
     [InlineData("!true", false)]
+    [InlineData("2 > 1", true)]
+    [InlineData("1 > 1", false)]
+    [InlineData("0 > 1", false)]
+    [InlineData("1 >= 1", true)]
+    [InlineData("2 < 1", false)]
+    [InlineData("1 < 1", false)]
+    [InlineData("0 < 1", true)]
+    [InlineData("1 <= 1", true)]
+    [InlineData("1 == 1", true)]
+    [InlineData("1 != 1", false)]
+    [InlineData("1 != 2", true)]
+    [InlineData("1 == 2", false)]
     public void BooleanTests(string source, bool expectedResult)
     {
         var lexer = new Lexer(source);

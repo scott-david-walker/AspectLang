@@ -117,7 +117,30 @@ public class Lexer
                 token = new("!", _currentLineNumber, _currentColumnNumber, TokenType.Exclamation);
             }
         }
-
+        if (_currentChar == '<')
+        {
+            if (PeekChar() == '=')
+            {
+                token = new ("<=", _currentLineNumber, _currentColumnNumber, TokenType.LessThanEqualTo);
+                ReadNextCharacter();
+            }
+            else
+            {
+                token = new ("<", _currentLineNumber, _currentColumnNumber, TokenType.LessThan);
+            }
+        }
+        if (_currentChar == '>')
+        {
+            if (PeekChar() == '=')
+            {
+                token = new (">=", _currentLineNumber, _currentColumnNumber, TokenType.GreaterThanEqualTo);
+                ReadNextCharacter();
+            }
+            else
+            {
+                token = new (">", _currentLineNumber, _currentColumnNumber, TokenType.GreaterThan);
+            }
+        }
         if (_currentChar == ';')
         {
             token = new(";", _currentLineNumber, _currentColumnNumber, TokenType.SemiColon);

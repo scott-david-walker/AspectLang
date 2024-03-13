@@ -23,7 +23,11 @@ public enum OpCode : byte
     GetLocal,
     JumpToFunction,
     Halt,
-    SetLocalArgument
+    SetLocalArgument,
+    LessThan,
+    LessThanEqualTo,
+    GreaterThan,
+    GreaterThanEqualTo
 }
 
 public static class DefinitionExtensions

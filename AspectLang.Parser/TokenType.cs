@@ -32,5 +32,7 @@ public enum TokenType
     Else,
     Return,
     Function,
-    Comma
+    Comma,
+    LessThanEqualTo,
+    GreaterThanEqualTo
 }

@@ -13,6 +13,8 @@ public class Parser
         { TokenType.NotEqual, Priority.Equals },
         { TokenType.LessThan, Priority.LessGreater },
         { TokenType.GreaterThan, Priority.LessGreater },
+        { TokenType.LessThanEqualTo, Priority.LessGreater },
+        { TokenType.GreaterThanEqualTo, Priority.LessGreater },
         { TokenType.Plus, Priority.Sum },
         { TokenType.Minus, Priority.Sum },
         { TokenType.Slash, Priority.Product },
@@ -46,6 +48,8 @@ public class Parser
         _infixParseFunctions.Add(TokenType.NotEqual, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.LessThan, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.GreaterThan, ParseInfixExpression);
+        _infixParseFunctions.Add(TokenType.LessThanEqualTo, ParseInfixExpression);
+        _infixParseFunctions.Add(TokenType.GreaterThanEqualTo, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.LeftParen, ParseFunctionCall);
         _lexer = lexer;
         GetNext();
@@ -149,7 +153,7 @@ public class Parser
 
     private IExpression ParseInfixExpression(IExpression expression)
     {
-        var infixExpression =  new InfixExpression()
+        var infixExpression =  new InfixExpression
         {
             Operator = _currentToken.Literal,
             Left = expression,

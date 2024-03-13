@@ -240,6 +240,48 @@ public class ParserTests
     }
     
     [Fact]
+    public void LessThan()
+    {
+        var lexer = new Lexer("19 < 20");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be("<");
+    }
+    
+    [Fact]
+    public void GreaterThan()
+    {
+        var lexer = new Lexer("19 > 20");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be(">");
+    }
+    
+    [Fact]
+    public void GreaterThanOrEqualTo()
+    {
+        var lexer = new Lexer("19 >= 20");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        var node = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        node!.Expression.Should()
+            .BeAssignableTo<InfixExpression>();
+
+        var infix = node.Expression as InfixExpression;
+        infix!.Operator.Should().Be(">=");
+    }
+    
+    [Fact]
     public void CanParseString()
     {
         var lexer = new Lexer("\"Test String\";");
