@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using AspectLang.Parser;
 using AspectLang.Parser.Compiler;
 using AspectLang.Parser.Compiler.ReturnableObjects;
@@ -83,6 +84,7 @@ public class FlowTests
     [InlineData("TestFiles/if.aspect", 4)]
     [InlineData("TestFiles/if_else.aspect", 2)]
     [InlineData("TestFiles/factorial.aspect", 720)]
+    [InlineData("TestFiles/pop_back_to_stack.aspect", 69)]
     public async Task RunTestFiles(string file, int expectedResult)
     {
         var source = await File.ReadAllTextAsync(file);
@@ -91,7 +93,6 @@ public class FlowTests
         var result = parser.Parse(); 
         var compiler = new Compiler();
         compiler.Compile(result.ProgramNode);
-
         var vm = new Vm(compiler.Instructions, compiler.Constants);
         var res = vm.Run();
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);

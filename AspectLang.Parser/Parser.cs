@@ -27,7 +27,6 @@ public class Parser
     private readonly Dictionary<TokenType, Func<IExpression, IExpression>> _infixParseFunctions = new();
     private readonly Lexer _lexer;
     private Token _currentToken;
-    private Token _previousToken;
     private Token _peekToken;
 
     public Parser(Lexer lexer)
@@ -87,23 +86,23 @@ public class Parser
         var call = new FunctionCall
         {
             Name = identifier.Name,
-            Token = _currentToken
+            Token = _currentToken,
+            Args = ParseExpressionList(TokenType.RightParen)
         };
-        call.Args = ParseExpressionList(TokenType.RightParen);
         return call;
     }
 
     private List<IExpression> ParseExpressionList(TokenType token)
     {
         var list = new List<IExpression>();
-        if (_peekToken.TokenType == token)
+        if (IsNextToken(token))
         {
             GetNext();
             return list;
         }
         GetNext();
         list.Add(ParseExpression(Priority.Lowest));
-        while (_peekToken.TokenType == TokenType.Comma)
+        while (IsNextToken(TokenType.Comma))
         { 
             GetNext();   
             GetNext();
@@ -125,9 +124,8 @@ public class Parser
 
     private BlockStatement ParseBlockStatement()
     {
-        var nested = 0;
         AssertNextToken(TokenType.LeftCurly);
-        if (_peekToken.TokenType == TokenType.RightCurly)
+        if (IsNextToken(TokenType.RightCurly))
         {
             throw new ParserException("Empty block statements are not allowed", _peekToken);
         }
@@ -137,12 +135,8 @@ public class Parser
         while (_peekToken.TokenType != TokenType.RightCurly)
         {
             var statement = ParseStatement();
-            if (statement is IfStatement or BlockStatement)
-            {
-                nested++;
-            }
             block.Statements.Add(statement);
-            if (_peekToken.TokenType == TokenType.SemiColon)
+            if (IsNextToken(TokenType.SemiColon))
             {
                 GetNext();
             }
@@ -204,10 +198,10 @@ public class Parser
     private VariableAssignmentNode ParseValAssignment(bool isFreshAssignment)
     {
         var variable = new VariableDeclarationNode(_currentToken, isFreshAssignment);
-         if (_peekToken.TokenType != TokenType.Assignment)
-         {
-             throw new ParserException($"Expected = but received {_peekToken.Literal}", _peekToken);
-         }
+        if (_peekToken.TokenType != TokenType.Assignment)
+        {
+            throw new ParserException($"Expected = but received {_peekToken.Literal}", _peekToken);
+        }
 
         GetNext();
         GetNext();
@@ -315,16 +309,17 @@ public class Parser
     
     private void GetNext()
     {
-        _previousToken = _currentToken;
         _currentToken = _peekToken;
         _peekToken = _lexer.NextToken();
     }
 
-    private IStatement ParseExpressionStatement()
+    private ExpressionStatement ParseExpressionStatement()
     {
-        var statement = new ExpressionStatement();
+        var statement = new ExpressionStatement
+        {
+            Expression = ParseExpression(Priority.Lowest)
+        };
 
-        statement.Expression = ParseExpression(Priority.Lowest);
         if (IsNextToken(TokenType.SemiColon))
         {
             GetNext();
@@ -337,13 +332,12 @@ public class Parser
     {
         if (!_prefixParseFunctions.ContainsKey(_currentToken.TokenType))
         {
-            throw new ParserException($"Unable to parse expression {_currentToken.Literal}",
-                _currentToken.LineNumber, _currentToken.ColumnPosition);
+            throw new ParserException($"Unable to parse expression {_currentToken.Literal}", _currentToken);
             
         }
         var prefix = _prefixParseFunctions[_currentToken.TokenType];
         var expression = prefix();
-        while (_peekToken.TokenType != TokenType.SemiColon && (priority < PeekPrecedence() || (expression is Identifier && _peekToken.TokenType == TokenType.LeftSquareBracket)))
+        while (_peekToken.TokenType != TokenType.SemiColon && (priority < PeekPrecedence() || (expression is Identifier && IsNextToken(TokenType.LeftSquareBracket))))
         {
             if (!_infixParseFunctions.ContainsKey(_peekToken.TokenType))
             {
@@ -398,8 +392,7 @@ public class Parser
             return new IntegerExpression(value, _currentToken);
         }
 
-        throw new ParserException($"Unable to parse {token.Literal} as string", _currentToken.LineNumber,
-            _currentToken.ColumnPosition);
+        throw new ParserException($"Unable to parse {token.Literal} as string", _currentToken);
     }
     
     private IExpression ParseStringExpression()
@@ -408,22 +401,9 @@ public class Parser
     }
 }
 
-internal class ParserException : Exception
+internal class ParserException(string message, Token token) : Exception
 {
-    public int LineNumber { get; }
-    public int ColumnNumber { get; }
-    public string Message { get; }
-
-    public ParserException(string message, Token token)
-    {
-        Message = message;
-        LineNumber = token.LineNumber;
-        ColumnNumber = token.ColumnPosition;
-    }
-    public ParserException(string message, int lineNumber, int columnNumber)
-    {
-        Message = message;
-        LineNumber = lineNumber;
-        ColumnNumber = columnNumber;
-    }
+    public int LineNumber { get; } = token.LineNumber;
+    public int ColumnNumber { get; } = token.ColumnPosition;
+    public override string Message { get; } = message;
 }

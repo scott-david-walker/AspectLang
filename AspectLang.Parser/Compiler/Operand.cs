@@ -13,7 +13,7 @@ public class Operand
         OperandType = OperandType.Name;
         Name = name;
     }
-    public OperandType OperandType { get; set; }
+    public OperandType OperandType { get; }
     public int? Reference { get; set; }
-    public string? Name { get; set; }
+    public string? Name { get;}
 }

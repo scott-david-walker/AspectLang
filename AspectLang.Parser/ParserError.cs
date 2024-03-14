@@ -1,22 +1,8 @@
 namespace AspectLang.Parser;
 
-public class ParserError
+public class ParserError(string message, int lineNumber, int columnPosition)
 {
-    public string Message { get; }
-    public int LineNumber { get; }
-    public int ColumnPosition { get; }
-
-    public ParserError(string message, Token token)
-    {
-        Message = message;
-        LineNumber = token.LineNumber;
-        ColumnPosition = token.ColumnPosition;
-    }
-    
-    public ParserError(string message, int lineNumber, int columnPosition)
-    {
-        Message = message;
-        LineNumber = lineNumber;
-        ColumnPosition = columnPosition;
-    }
+    public string Message { get; } = message;
+    public int LineNumber { get; } = lineNumber;
+    public int ColumnPosition { get; } = columnPosition;
 }

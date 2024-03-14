@@ -1,0 +1,9 @@
+
+fn pop_back(x) {
+    if(x > 35) {
+        return x;
+    }
+    return pop_back(x * 2) + 1;
+}
+
+return pop_back(2);

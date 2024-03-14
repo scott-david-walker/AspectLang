@@ -47,15 +47,15 @@ public class StackFrame(int returnLocation)
 
     private IReturnableObject Get(string name)
     {
-        var s = _currentScope;
-        while (s != null)
+        var scope = _currentScope;
+        while (scope != null)
         {
-            if(s.LocalVariables.ContainsKey(name))
+            if(scope.LocalVariables.TryGetValue(name, out var variable))
             {
-                return s.LocalVariables[name];
+                return variable;
             }
 
-            s = s.Parent;
+            scope = scope.Parent;
         }
 
         throw new("No variable found");

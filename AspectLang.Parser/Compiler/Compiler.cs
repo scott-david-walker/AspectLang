@@ -26,7 +26,7 @@ public class Compiler : IVisitor
     private Scope _scope = new(null);
     private readonly FunctionTable _functionTable = new();
     private readonly FunctionTable _functionCalls = new();
-    private readonly List<FunctionDeclarationStatement> _functions = [];
+    private readonly List<FunctionDeclarationStatement> _functionsDeclarations = [];
 
     public void Compile(INode node)
     {
@@ -39,28 +39,30 @@ public class Compiler : IVisitor
 
     private void UpdateCalls()
     {
-        foreach (var function in _functionCalls.Functions)
+        foreach (var functionCall in _functionCalls.Functions)
         {
-            var f = _functionTable.Functions.FirstOrDefault(t =>
-                t.Name == function.Name && t.ParametersCount == function.ParametersCount);
+            var functionDeclaration = _functionTable.Functions.FirstOrDefault(t =>
+                t.Name == functionCall.Name && t.ParametersCount == functionCall.ParametersCount);
 
-            if (f == null)
+            if (functionDeclaration == null)
             {
                 throw new("FUNCTION NOT FOUND");
             }
 
-            var currentLocation = function.EntryPoint;
-            Instructions[currentLocation].Operands[0].Reference = f.EntryPoint;
+            var currentLocation = functionCall.EntryPoint;
+            // jump location
+            Instructions[currentLocation].Operands[0].Reference = functionDeclaration.EntryPoint;
+            //return location
             Instructions[currentLocation].Operands[1].Reference = currentLocation;
         }
     }
     private void CompileFunctions()
     {
-        foreach (var function in _functions)
+        foreach (var function in _functionsDeclarations)
         {
             EnterScope();
+            //Entry point is set to the start of the function. This is safe because functions are compiled on the second pass
             var entryPoint = Instructions.Count - 1;
-            
             // could we change all this so that arguments are a different opcode
             
             //double for each because we only want to do a GETLOCAL after the arguments are set
@@ -262,7 +264,7 @@ public class Compiler : IVisitor
 
     public void Visit(FunctionDeclarationStatement functionDeclaration)
     {
-        _functions.Add(functionDeclaration);
+        _functionsDeclarations.Add(functionDeclaration);
     }
 
     public void Visit(FunctionCall functionCall)
@@ -278,7 +280,7 @@ public class Compiler : IVisitor
             Name = functionCall.Name,
             ParametersCount = functionCall.Args.Count,
             EntryPoint = location,
-            ReturnPoint = Instructions.Count
+            ReturnPoint = Instructions.Count // This is a bit of a hack but it is updated on the second pass.
         });
     }
 
@@ -312,10 +314,8 @@ public class Compiler : IVisitor
     
     private int Emit(OpCode opcode, List<Operand> operands)
     {
-        //var instructions = ByteCode.Create(opcode, operands);
         var instruction = CreateInstruction(opcode, operands);
         var position = AddInstructions(instruction);
-        //SetLastInstruction((byte)opcode, position);
         return position;
     }
 

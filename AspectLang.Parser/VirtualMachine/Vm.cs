@@ -84,11 +84,12 @@ public class Vm
 
     public void PopFrame()
     {
-        if (_stack.Count > 1)
+        if (_stack.Count <= 1)
         {
-            _stack.Pop();
-            _currentFrame = _stack.Peek();
+            return;
         }
+        _stack.Pop();
+        _currentFrame = _stack.Peek();
     }
 
     public int ReturnLocation()
