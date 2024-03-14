@@ -63,6 +63,8 @@ public class LexerTests
     [InlineData(">", TokenType.GreaterThan)]
     [InlineData(">=", TokenType.GreaterThanEqualTo)]
     [InlineData("<=", TokenType.LessThanEqualTo)]
+    [InlineData("[", TokenType.LeftSquareBracket)]
+    [InlineData("]", TokenType.RightSquareBracket)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

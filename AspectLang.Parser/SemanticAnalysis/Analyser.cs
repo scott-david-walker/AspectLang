@@ -152,4 +152,13 @@ public class Analyser : IVisitor
     {
         
     }
+
+    public void Visit(ArrayLiteral array)
+    {
+        
+    }
+
+    public void Visit(IndexExpression indexExpression)
+    {
+    }
 }

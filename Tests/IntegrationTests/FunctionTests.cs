@@ -71,4 +71,23 @@ public class FunctionTests : TestBase
         var res = Run("fn test(x, y) { return x + y; } test(\"scott\", \"here\");");
         res.Should().BeAssignableTo<StringReturnableObject>().Which.Value.Should().Be("scotthere");
     }
+    
+    [Theory]
+    [InlineData(0, 10)]
+    [InlineData(1, 20)]
+    [InlineData(2, 30)]
+    [InlineData(3, 40)]
+    [InlineData(4, 50)]
+    public void CanPassArrayToFunctionAndReturnIndexedValue(int index, int expectedResult)
+    {
+        var res = Run($"fn test(x) {{ return x[{index}]; }} val n = [10, 20, 30, 40, 50]; return test(n);");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);
+    }
+    
+    [Fact]
+    public void CanPassMultipleArraysToFunctionAndReturnIndexedValue()
+    {
+        var res = Run($"fn test(x, y) {{ return y[1]; }} val n = [10, 20, 30, 40, 50]; val x = [5, 15, 25]; return test(n, x);");
+        res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(15);
+    }
 }

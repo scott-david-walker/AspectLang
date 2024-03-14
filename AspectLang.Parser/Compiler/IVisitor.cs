@@ -20,4 +20,6 @@ public interface IVisitor
     void Visit(ReturnStatement returnStatement);
     void Visit(FunctionDeclarationStatement functionDeclaration);
     void Visit(FunctionCall functionCall);
+    void Visit(ArrayLiteral array);
+    void Visit(IndexExpression indexExpression);
 }

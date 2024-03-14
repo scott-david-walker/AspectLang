@@ -306,6 +306,37 @@ public class ParserTests
             .BeAssignableTo<Identifier>();
     }
     
+    [Fact]
+    public void Array()
+    {
+        var lexer = new Lexer("[1,2];");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        
+        var statement = result.ProgramNode.StatementNodes[0] as ExpressionStatement;
+        var node = statement.Expression as ArrayLiteral;
+        node.Elements.Should().HaveCount(2);
+        node.Elements[0].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(1);
+        node.Elements[1].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(2);
+    }
+
+    [Fact]
+    public void Index()
+    {
+        var lexer = new Lexer("val x = [1, 2]; val g = x[1];");
+        var parser = new Parser(lexer);
+        var result = parser.Parse();
+        
+        var statement = result.ProgramNode.StatementNodes[1] as VariableAssignmentNode;
+        statement.Expression.Should().BeAssignableTo<IndexExpression>();
+        var index = statement.Expression as IndexExpression;
+        index.Index.Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(1);
+        index.Left.Should().BeAssignableTo<Identifier>().Which.Name.Should().Be("x");
+        // node.Elements.Should().HaveCount(2);
+        // node.Elements[0].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(1);
+        // node.Elements[1].Should().BeAssignableTo<IntegerExpression>().Which.Value.Should().Be(2);
+    }
+
 
     // [Theory]
     // [InlineData("true", true)]

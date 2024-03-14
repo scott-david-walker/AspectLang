@@ -8,7 +8,7 @@ public class Parser
 {
     private readonly Dictionary<TokenType, Priority> _precendences = new()
     {
-        { TokenType.LeftBracket, Priority.Index },
+        { TokenType.LeftSquareBracket, Priority.Index },
         { TokenType.Equality, Priority.Equals },
         { TokenType.NotEqual, Priority.Equals },
         { TokenType.LessThan, Priority.LessGreater },
@@ -39,7 +39,9 @@ public class Parser
         _prefixParseFunctions.Add(TokenType.Exclamation, ParsePrefixExpression);
         _prefixParseFunctions.Add(TokenType.False, ParseBooleanExpression);
         _prefixParseFunctions.Add(TokenType.True, ParseBooleanExpression);
+        _prefixParseFunctions.Add(TokenType.LeftSquareBracket, ParseArrayLiteral);
 
+        _infixParseFunctions.Add(TokenType.LeftSquareBracket, ParseIndexExpression);
         _infixParseFunctions.Add(TokenType.Plus, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.Minus, ParseInfixExpression);
         _infixParseFunctions.Add(TokenType.Slash, ParseInfixExpression);
@@ -54,6 +56,28 @@ public class Parser
         _lexer = lexer;
         GetNext();
         GetNext();
+    }
+
+ 
+    private IExpression ParseIndexExpression(IExpression arg)
+    {
+        var indexExpression = new IndexExpression();
+        indexExpression.Left = arg;
+        indexExpression.Token = _currentToken;
+        GetNext();
+        indexExpression.Index = ParseExpression(Priority.Lowest);
+        AssertNextToken(TokenType.RightSquareBracket);
+        return indexExpression;
+    }
+
+    private IExpression ParseArrayLiteral()
+    {
+        var arrayLiteral = new ArrayLiteral();
+        arrayLiteral.Token = _currentToken;
+        
+        var list = ParseExpressionList(TokenType.RightSquareBracket);
+        arrayLiteral.Elements = list;
+        return arrayLiteral;
     }
 
     private IExpression ParseFunctionCall(IExpression identifierExpression)
@@ -183,10 +207,10 @@ public class Parser
     private VariableAssignmentNode ParseValAssignment(bool isFreshAssignment)
     {
         var variable = new VariableDeclarationNode(_currentToken, isFreshAssignment);
-        if (_peekToken.TokenType != TokenType.Assignment)
-        {
-            throw new ParserException($"Expected = but received {_peekToken.Literal}", _peekToken);
-        }
+         if (_peekToken.TokenType != TokenType.Assignment)
+         {
+             throw new ParserException($"Expected = but received {_peekToken.Literal}", _peekToken);
+         }
 
         GetNext();
         GetNext();
@@ -207,7 +231,7 @@ public class Parser
     }
     private IStatement ParseStatement()
     {
-        if (_currentToken.TokenType == TokenType.SemiColon || _currentToken.TokenType == TokenType.RightCurly)
+        if (_currentToken.TokenType is TokenType.SemiColon or TokenType.RightCurly)
         {
             GetNext();
         }
@@ -325,7 +349,7 @@ public class Parser
         }
         var prefix = _prefixParseFunctions[_currentToken.TokenType];
         var expression = prefix();
-        while (_peekToken.TokenType != TokenType.SemiColon && priority < PeekPrecedence())
+        while (_peekToken.TokenType != TokenType.SemiColon && (priority < PeekPrecedence() || (expression is Identifier && _peekToken.TokenType == TokenType.LeftSquareBracket)))
         {
             if (!_infixParseFunctions.ContainsKey(_peekToken.TokenType))
             {

@@ -50,6 +50,14 @@ public class Lexer
         {
             token = new ("}", _currentLineNumber, _currentColumnNumber, TokenType.RightCurly);
         }
+        if (_currentChar == '[')
+        {
+            token = new ("[", _currentLineNumber, _currentColumnNumber, TokenType.LeftSquareBracket);
+        }
+        if (_currentChar == ']')
+        {
+            token = new ("]", _currentLineNumber, _currentColumnNumber, TokenType.RightSquareBracket);
+        }
         if (_currentChar == ',')
         {
             token = new (",", _currentLineNumber, _currentColumnNumber, TokenType.Comma);

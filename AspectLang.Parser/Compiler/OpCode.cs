@@ -27,7 +27,9 @@ public enum OpCode : byte
     LessThan,
     LessThanEqualTo,
     GreaterThan,
-    GreaterThanEqualTo
+    GreaterThanEqualTo,
+    Array,
+    Index
 }
 
 public static class DefinitionExtensions

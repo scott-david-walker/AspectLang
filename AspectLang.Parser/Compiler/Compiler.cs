@@ -281,6 +281,23 @@ public class Compiler : IVisitor
         });
     }
 
+    public void Visit(ArrayLiteral array)
+    {
+        foreach (var element in array.Elements)
+        {
+            element.Accept(this);
+        }
+
+        Emit(OpCode.Array, [new(array.Elements.Count)]);
+    }
+
+    public void Visit(IndexExpression indexExpression)
+    {
+        indexExpression.Left.Accept(this);
+        indexExpression.Index.Accept(this);
+        Emit(OpCode.Index);
+    }
+
     private void UpdateInstruction(int position, int location)
     {
         var instruction = Instructions[position];
@@ -321,8 +338,6 @@ public class Compiler : IVisitor
         Instructions.Add(instruction);
         return pos;
     }
-    
-
     
     private int AddConstant(IReturnableObject obj)
     {

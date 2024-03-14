@@ -26,6 +26,7 @@ public class FlowTests
     [InlineData("-5 + 6", 1)]
     [InlineData("-5 * -1", 5)]
     [InlineData("5 * -1", -5)]
+    [InlineData("-5 * -5", 25)]
 
     public void SimpleMaths(string source, int expectedResult)
     {
@@ -54,6 +55,16 @@ public class FlowTests
     [InlineData("!false != !true", true)]
     [InlineData("\"test\" == \"test\"", true)]
     [InlineData("\"test\" != \"test2\"", true)]
+    [InlineData("!false", true)]
+    [InlineData("!true", false)]
+    [InlineData("2 > 1", true)]
+    [InlineData("1 > 1", false)]
+    [InlineData("0 > 1", false)]
+    [InlineData("1 >= 1", true)]
+    [InlineData("2 < 1", false)]
+    [InlineData("1 < 1", false)]
+    [InlineData("0 < 1", true)]
+    [InlineData("1 <= 1", true)]
     public void EqualityTests(string source, bool expectedResult)
     {
         var lexer = new Lexer(source);
@@ -65,33 +76,7 @@ public class FlowTests
         var res = vm.Run();
         res.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(expectedResult);
     }
-
-    [Theory]
-    [InlineData("!false", true)]
-    [InlineData("!true", false)]
-    [InlineData("2 > 1", true)]
-    [InlineData("1 > 1", false)]
-    [InlineData("0 > 1", false)]
-    [InlineData("1 >= 1", true)]
-    [InlineData("2 < 1", false)]
-    [InlineData("1 < 1", false)]
-    [InlineData("0 < 1", true)]
-    [InlineData("1 <= 1", true)]
-    [InlineData("1 == 1", true)]
-    [InlineData("1 != 1", false)]
-    [InlineData("1 != 2", true)]
-    [InlineData("1 == 2", false)]
-    public void BooleanTests(string source, bool expectedResult)
-    {
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var result = parser.Parse(); 
-        var compiler = new Compiler();
-        compiler.Compile(result.ProgramNode);
-        var vm = new Vm(compiler.Instructions, compiler.Constants);
-        var res = vm.Run();
-        res.Should().BeAssignableTo<BooleanReturnableObject>().Which.Value.Should().Be(expectedResult);
-    }
+    
     
     [Theory]
     [InlineData("TestFiles/add.aspect", 15)]
