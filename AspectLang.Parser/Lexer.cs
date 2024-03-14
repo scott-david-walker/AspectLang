@@ -226,6 +226,13 @@ public class Lexer
 
     private void EatWhitespace()
     {
+        if (_currentChar == '/' && PeekChar() == '/')
+        {
+            while (_currentChar != '\n' && _currentChar != '\0')
+            {
+                ReadNextCharacter();
+            }
+        }
         if (_currentChar == '\n')
         {
             _currentLineNumber++;

@@ -1,4 +1,4 @@
-
+// Tests whether we correctly pop the stack values. the "+ 1" is only used when wee go back up the stack
 fn pop_back(x) {
     if(x > 35) {
         return x;

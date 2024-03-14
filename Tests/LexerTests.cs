@@ -81,4 +81,27 @@ public class LexerTests
         token.TokenType.Should().Be(TokenType.String);
         token.Literal.Should().Be("test string"); 
     }
+
+    [Fact]
+    public void ShouldIgnoreComments()
+    {
+        var lexer = new Lexer(@"
+// This is a comment
+val x = ");
+        var token = lexer.NextToken();
+        token.TokenType.Should().Be(TokenType.Val);
+    }
+    
+    [Fact]
+    public void ShouldIgnoreMultipleComments()
+    {
+        var lexer = new Lexer(@"
+// This is a comment
+// And this is another
+
+// And another
+val x = ");
+        var token = lexer.NextToken();
+        token.TokenType.Should().Be(TokenType.Val);
+    }
 }
