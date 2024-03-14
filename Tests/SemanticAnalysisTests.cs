@@ -32,7 +32,12 @@ public class SemanticAnalysisTests
     [Fact]
     public void WhenDeclaringVariableThatWasSetInHigherScope_ShouldThrowError()
     {
-        var lexer = new Lexer("val x = 5; if(5 == 5) { val x = 10; }"); 
+        var lexer = new Lexer(@"
+            val x = 5; 
+            if(5 == 5) { 
+                val x = 10; 
+            }
+        "); 
         var parser = new Parser(lexer);
         var result = parser.Parse();
         result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x already exists");
