@@ -16,9 +16,4 @@ public class PrefixExpression : IExpression
     {
         visitor.Visit(this);
     }
-
-    public INode ExpressionNode()
-    {
-        return this;
-    }
 }

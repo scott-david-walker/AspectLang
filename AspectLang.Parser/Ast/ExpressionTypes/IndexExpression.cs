@@ -11,9 +11,4 @@ public class IndexExpression : IExpression
     {
         visitor.Visit(this);
     }
-
-    public INode ExpressionNode()
-    {
-        return this;
-    }
 }

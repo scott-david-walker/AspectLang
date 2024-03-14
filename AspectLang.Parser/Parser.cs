@@ -1,5 +1,6 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
+using AspectLang.Parser.Ast.Statements;
 using AspectLang.Parser.SemanticAnalysis;
 
 namespace AspectLang.Parser;
@@ -145,10 +146,6 @@ public class Parser
             {
                 GetNext();
             }
-            // if (_currentToken.TokenType == TokenType.RightCurly)
-            // {
-            //     GetNext();
-            // }
         }
         AssertNextToken(TokenType.RightCurly);
         return block;
@@ -276,7 +273,6 @@ public class Parser
     private IfStatement ParseIfStatement()
     {
         AssertNextToken(TokenType.LeftParen);
-
         GetNext();
         var condition = ParseExpression(Priority.Lowest);
         AssertNextToken(TokenType.RightParen);
@@ -317,8 +313,6 @@ public class Parser
         return parseResult;
     }
     
-    
-
     private void GetNext()
     {
         _previousToken = _currentToken;

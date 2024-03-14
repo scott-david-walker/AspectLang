@@ -1,8 +1,8 @@
 using AspectLang.Parser.Compiler;
 
-namespace AspectLang.Parser.Ast;
+namespace AspectLang.Parser.Ast.Statements;
 
-public class VariableDeclarationNode(Token token, bool isFreshDeclaration) : INode
+public class VariableDeclarationNode(Token token, bool isFreshDeclaration) : IStatement
 {
     public Token Token { get; } = token;
     public string Name { get; } = token.Literal;

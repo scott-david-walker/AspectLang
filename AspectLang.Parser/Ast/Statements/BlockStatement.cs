@@ -1,6 +1,6 @@
 using AspectLang.Parser.Compiler;
 
-namespace AspectLang.Parser.Ast;
+namespace AspectLang.Parser.Ast.Statements;
 
 public class BlockStatement : IStatement
 {

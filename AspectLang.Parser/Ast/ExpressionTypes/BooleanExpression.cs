@@ -16,9 +16,4 @@ public class BooleanExpression : IExpression
     {
         visitor.Visit(this);
     }
-
-    public INode ExpressionNode()
-    {
-        return this;
-    }
 }

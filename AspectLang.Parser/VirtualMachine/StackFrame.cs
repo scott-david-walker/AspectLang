@@ -42,7 +42,7 @@ public class StackFrame(int returnLocation)
 
     public void SetLocalVariable(IReturnableObject returnableObject, string name)
     {
-        SetOrThrow(name, returnableObject);
+        Set(name, returnableObject);
     }
 
     private IReturnableObject Get(string name)
@@ -60,7 +60,7 @@ public class StackFrame(int returnLocation)
 
         throw new("No variable found");
     }
-    private void SetOrThrow(string name, IReturnableObject returnableObject)
+    private void Set(string name, IReturnableObject returnableObject)
     {
         var s = _currentScope;
         while (s != null)

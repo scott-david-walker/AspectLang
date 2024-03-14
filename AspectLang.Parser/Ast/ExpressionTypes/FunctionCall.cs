@@ -1,6 +1,6 @@
 using AspectLang.Parser.Compiler;
 
-namespace AspectLang.Parser.Ast;
+namespace AspectLang.Parser.Ast.ExpressionTypes;
 
 public class FunctionCall : IExpression
 {
@@ -10,10 +10,5 @@ public class FunctionCall : IExpression
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
-    }
-
-    public INode ExpressionNode()
-    {
-        return this;
     }
 }

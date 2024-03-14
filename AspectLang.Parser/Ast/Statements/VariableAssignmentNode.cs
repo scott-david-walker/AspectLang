@@ -1,7 +1,7 @@
+using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler;
-using AspectLang.Shared;
 
-namespace AspectLang.Parser.Ast;
+namespace AspectLang.Parser.Ast.Statements;
 
 public class VariableAssignmentNode : IStatement
 {

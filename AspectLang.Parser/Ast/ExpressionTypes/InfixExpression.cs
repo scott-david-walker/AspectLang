@@ -10,11 +10,6 @@ public class InfixExpression : IExpression
     public IExpression Right { get; set; }
     public IExpression Left { get; set; }
     
-    public INode ExpressionNode()
-    {
-        return this;
-    }
-
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);

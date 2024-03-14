@@ -1,6 +1,7 @@
+using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Compiler;
 
-namespace AspectLang.Parser.Ast;
+namespace AspectLang.Parser.Ast.Statements;
 
 public class IfStatement : IStatement
 {
