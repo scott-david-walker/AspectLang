@@ -39,6 +39,10 @@ public class Vm
         { OpCode.JumpToFunction, new JumpToFunctionOperation() },
         { OpCode.Array, new ArrayOperation() },
         { OpCode.Index, new IndexOperation() },
+        { OpCode.LoopBegin, new IterateOverOperation() },
+        { OpCode.Increment, new IncrementOperation() },
+        { OpCode.Compare, new CompareOperation() },
+        { OpCode.EndLoop, new EndLoopOperation() }
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -101,6 +105,7 @@ public class Vm
     {
         return _constants[index];
     }
+
     public void SetLocal(IReturnableObject returnableObject, string name)
     {
         _currentFrame.SetLocalVariable(returnableObject, name);
@@ -118,5 +123,98 @@ public class Vm
     public void ExitScope()
     {
         _currentFrame.ExitScope();
+    }
+}
+
+internal class EndLoopOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var index = vm.Pop();
+        var condition = vm.Pop();
+        if (condition is not BooleanReturnableObject boolObj)
+        {
+            throw new ("Expected a boolean object");
+        }
+        if (!boolObj.Value)
+        {
+            vm.InstructionPointer = operands[0].Reference.Value;
+        }
+        else
+        {
+            vm.Push(index);
+        }
+    }
+}
+
+internal class CompareOperation : IOperation
+{
+    // Maybe this should just output a bool about whether to iterate again?
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var indexVariable = operands[0].Name;
+        var compareTo = operands[1].Name;
+        vm.GetLocal(indexVariable!);
+        var index = vm.Pop();
+        if (index is not IntegerReturnableObject indexInt)
+        {
+            throw new ("Expected an integer value");
+        }
+        vm.GetLocal(compareTo!);
+        var comparable = vm.Pop();
+        if (comparable is not ArrayReturnableObject arrayReturnableObject)
+        {
+            throw new("Expected an array value");
+        }
+
+        if (indexInt.Value < arrayReturnableObject.Elements.Count)
+        {
+            vm.SetLocal(arrayReturnableObject.Elements[indexInt.Value], "it");
+            vm.Push(new BooleanReturnableObject(true));
+        }
+        else
+        {
+            vm.Push(new BooleanReturnableObject(false));
+        }
+    }
+}
+
+internal class IncrementOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var variable = operands[0];
+        vm.GetLocal(variable.Name!);
+        var val = vm.Pop();
+        if (val is not IntegerReturnableObject intVal)
+        {
+            throw new ("Expected an integer value");
+        }
+
+        var value = intVal.Value;
+        value++;
+        vm.SetLocal(new IntegerReturnableObject(value), variable.Name!);
+    }
+}
+
+internal class IterateOverOperation : IOperation
+{
+    public void Execute(Vm vm, List<Operand> operands)
+    {
+        var endOfLoop = operands[0].Reference;
+        var x = vm.Pop();
+        if (x is not ArrayReturnableObject array)
+        {
+            throw new("Expected an array object");
+        }
+
+        if (array.Elements.Count == 0)
+        {
+            vm.InstructionPointer = endOfLoop.Value;
+        }
+        else
+        {
+            vm.SetLocal(array.Elements[0], "it");
+        }
     }
 }

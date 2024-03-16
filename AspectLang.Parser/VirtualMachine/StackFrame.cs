@@ -42,8 +42,27 @@ public class StackFrame(int returnLocation)
 
     public void SetLocalVariable(IReturnableObject returnableObject, string name)
     {
-        Set(name, returnableObject);
-    }
+        var s = _currentScope;
+        
+        // Special case
+        // Index should always be the current scope.
+        if (name == "index")
+        {
+            _currentScope.LocalVariables[name] = returnableObject;
+            return;
+        }
+        while (s != null)
+        {
+            if(s.LocalVariables.ContainsKey(name))
+            {
+                s.LocalVariables[name] = returnableObject;
+                return;
+            }
+
+            s = s.Parent;
+        }
+
+        _currentScope.LocalVariables[name] = returnableObject;    }
 
     private IReturnableObject Get(string name)
     {
@@ -59,21 +78,5 @@ public class StackFrame(int returnLocation)
         }
 
         throw new("No variable found");
-    }
-    private void Set(string name, IReturnableObject returnableObject)
-    {
-        var s = _currentScope;
-        while (s != null)
-        {
-            if(s.LocalVariables.ContainsKey(name))
-            {
-                s.LocalVariables[name] = returnableObject;
-                return;
-            }
-
-            s = s.Parent;
-        }
-
-        _currentScope.LocalVariables[name] = returnableObject;
     }
 }

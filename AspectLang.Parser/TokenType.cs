@@ -34,5 +34,7 @@ public enum TokenType
     Function,
     Comma,
     LessThanEqualTo,
-    GreaterThanEqualTo
+    GreaterThanEqualTo,
+    Iterate,
+    Over
 }

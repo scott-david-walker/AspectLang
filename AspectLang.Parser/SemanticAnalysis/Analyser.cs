@@ -50,16 +50,12 @@ public class Analyser : IVisitor
 
     public void Visit(BlockStatement blockStatement)
     {
-        var scope = new Scope(_currentScope);
-        _scopeCount++;
-        _currentScope = scope;
+        EnterScope();
         foreach (var statement in blockStatement.Statements)
         {
             statement.Accept(this);
         }
-
-        _currentScope = scope.Parent!;
-        _scopeCount--;
+        ExitScope();
     }
 
     public void Visit(IfStatement ifStatement)
@@ -156,10 +152,34 @@ public class Analyser : IVisitor
 
     public void Visit(ArrayLiteral array)
     {
-        
+        foreach (var element in array.Elements)
+        {
+            element.Accept(this);
+        }
     }
 
     public void Visit(IndexExpression indexExpression)
     {
+    }
+
+    public void Visit(IterateOverStatement iterateOver)
+    {
+        iterateOver.Identifier.Accept(this);
+        _currentScope.SymbolTable.Define("index");
+        _currentScope.SymbolTable.Define("it");
+        iterateOver.Body.Accept(this);
+    }
+
+    private void EnterScope()
+    {
+        var scope = new Scope(_currentScope);
+        _scopeCount++;
+        _currentScope = scope;
+    }
+
+    private void ExitScope()
+    {
+        _currentScope = _currentScope.Parent!;
+        _scopeCount--;
     }
 }

@@ -28,5 +28,10 @@ public enum OpCode : byte
     GreaterThan,
     GreaterThanEqualTo,
     Array,
-    Index
+    Index,
+    LoopBegin,
+    Increment,
+    Compare,
+    Push,
+    EndLoop
 }

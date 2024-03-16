@@ -23,4 +23,5 @@ public interface IVisitor
     void Visit(FunctionCall functionCall);
     void Visit(ArrayLiteral array);
     void Visit(IndexExpression indexExpression);
+    void Visit(IterateOverStatement iterateOver);
 }

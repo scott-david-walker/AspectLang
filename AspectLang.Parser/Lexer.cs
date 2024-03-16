@@ -20,6 +20,8 @@ public class Lexer
         { "false", TokenType.False },
         { "return", TokenType.Return },
         { "fn", TokenType.Function },
+        { "iterate", TokenType.Iterate },
+        { "over", TokenType.Over },
     };
     public Lexer(string source)
     {

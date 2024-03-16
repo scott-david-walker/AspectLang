@@ -238,9 +238,30 @@ public class Parser
                 return ParseIfStatement();
             case TokenType.Function:
                 return ParseFunction();
+            case TokenType.Iterate:
+                return ParseLoop();
         }
 
         return ParseExpressionStatement();
+    }
+
+    private IStatement ParseLoop()
+    {
+        AssertNextToken(TokenType.Over);
+        GetNext();
+        var identifierExpression = ParseExpression(Priority.Lowest);
+
+        if (identifierExpression is not Identifier identifier)
+        {
+            throw new ParserException($"Expected an identifier but received {identifierExpression.GetType()}", _currentToken);
+        }
+        var block = ParseBlockStatement();
+        return new IterateOverStatement
+        {
+            Identifier = identifier,
+            Token = _currentToken,
+            Body = block
+        };
     }
 
     private FunctionDeclarationStatement ParseFunction()
