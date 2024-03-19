@@ -39,10 +39,9 @@ public class Vm
         { OpCode.JumpToFunction, new JumpToFunctionOperation() },
         { OpCode.Array, new ArrayOperation() },
         { OpCode.Index, new IndexOperation() },
-        { OpCode.LoopBegin, new IterateOverOperation() },
         { OpCode.Increment, new IncrementOperation() },
         { OpCode.Compare, new CompareOperation() },
-        { OpCode.EndLoop, new EndLoopOperation() }
+        { OpCode.EndLoop, new EndLoopOperation() }, 
     };
     public Vm(List<Instruction> instructions, List<IReturnableObject> constants)
     {
@@ -125,7 +124,6 @@ public class Vm
         _currentFrame.ExitScope();
     }
 }
-
 internal class EndLoopOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
@@ -189,27 +187,5 @@ internal class IncrementOperation : IOperation
         var value = intVal.Value;
         value++;
         vm.SetLocal(new IntegerReturnableObject(value), variable.Name!);
-    }
-}
-
-internal class IterateOverOperation : IOperation
-{
-    public void Execute(Vm vm, List<Operand> operands)
-    {
-        var endOfLoop = operands[0].Reference;
-        var x = vm.Pop();
-        if (x is not ArrayReturnableObject array)
-        {
-            throw new("Expected an array object");
-        }
-
-        if (array.Elements.Count == 0)
-        {
-            vm.InstructionPointer = endOfLoop.Value;
-        }
-        else
-        {
-            vm.SetLocal(array.Elements[0], "it");
-        }
     }
 }

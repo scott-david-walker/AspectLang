@@ -318,18 +318,18 @@ public class Compiler : IVisitor
 
     public void Visit(IterateOverStatement iterateOver)
     {
-        iterateOver.Identifier.Accept(this);
-        var pointer = Emit(OpCode.LoopBegin, [new(0)]);
         Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(0)))]);
         var startPosition = Instructions.Count - 1;
         Emit(OpCode.SetLocal, [new("index")]);
+        Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(0)))]);
+        Emit(OpCode.SetLocal, [new("it")]);
+        Emit(OpCode.Compare, [new("index"), new(iterateOver.Identifier.Name)]);
+        var pointer = Emit(OpCode.EndLoop, [new(0)]); 
         iterateOver.Body.Accept(this);
         Emit(OpCode.Increment, [new("index")]);
-        Emit(OpCode.Compare, [new("index"), new(iterateOver.Identifier.Name)]);
-        var endLoop = Instructions.Count + 2;
-        Emit(OpCode.EndLoop, [new(endLoop)]); 
         Emit(OpCode.GetLocal, [new("index")]);
         Emit(OpCode.Jump, [new(startPosition)]);
+        var endLoop = Instructions.Count - 1;
         UpdateInstruction(pointer, endLoop);
     }
 

@@ -32,6 +32,6 @@ public enum OpCode : byte
     LoopBegin,
     Increment,
     Compare,
-    Push,
-    EndLoop
+    EndLoop,
+    Initialise
 }
