@@ -10,7 +10,7 @@ public abstract class TestBase
     protected static ParseResult Parse(string source)
     {
         var result = Parse(source, true);
-        new Analyser().Analyse(result.ProgramNode);
+        new SemanticAnalyser().Analyse(result.ProgramNode);
         return result;
     }
     
@@ -29,9 +29,9 @@ public abstract class TestBase
     protected static IReturnableObject Run(string source)
     {
         var result = Parse(source);
-        var analyser = new Analyser().Analyse(result.ProgramNode);
+        var analyser = new SemanticAnalyser().Analyse(result.ProgramNode);
         var compiler = new Compiler();
-        compiler.Compile(result.ProgramNode, analyser.Analysis);
+        compiler.Compile(result.ProgramNode, analyser.SemanticAnalysis);
         var vm = new Vm(compiler.Instructions, compiler.Constants);
         return vm.Run();
     }

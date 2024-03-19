@@ -24,11 +24,10 @@ public class Compiler : IVisitor
 {
     public List<Instruction> Instructions { get; } = [];
     public List<IReturnableObject> Constants { get; } = [];
-    private Scope _scope = new(null);
     private readonly FunctionTable _functionTable = new();
     private readonly FunctionTable _functionCalls = new();
     private readonly List<FunctionDeclarationStatement> _functionsDeclarations = [];
-    private Analysis _analysis;
+    private SemanticAnalysis.SemanticAnalysis _semanticAnalysis;
     private int _scopeCount = 0;
     private Guid? _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
     public void Compile(INode node)
@@ -39,9 +38,9 @@ public class Compiler : IVisitor
         UpdateCalls();
         // Should do a conversion to some byte code format tbd
     }
-    public void Compile(ProgramNode resultProgramNode, Analysis analyse)
+    public void Compile(ProgramNode resultProgramNode, SemanticAnalysis.SemanticAnalysis analyse)
     {
-        _analysis = analyse;
+        _semanticAnalysis = analyse;
         resultProgramNode.Accept(this);
         Emit(OpCode.Halt);
         CompileFunctions();
@@ -82,7 +81,7 @@ public class Compiler : IVisitor
                 
                 Emit(OpCode.SetLocal, [new(symbol.Name)]);
             }
-            _scopeId = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == function.Name && t.TestScope == TestScope.Function).ScopeId;
+            _scopeId = _semanticAnalysis.SymbolTable.Symbols.FirstOrDefault(t => t.Name == function.Name && t.SymbolScope == SymbolScope.Function).ScopeId;
             foreach (var param in function.Parameters)
             {
                 param.Accept(this);
@@ -193,17 +192,14 @@ public class Compiler : IVisitor
     private void EnterScope()
     {
         Emit(OpCode.EnterScope);
-        var scope = new Scope(_scope);
-        _scope = scope;
-        _scopeId = _analysis.EnterScopes[_scopeCount];
+        _scopeId = _semanticAnalysis.EnterScopes[_scopeCount];
         _scopeCount++;
     }
 
     private void ExitScope()
     {
-        _scope = _scope.Parent;
         Emit(OpCode.ExitScope);
-        _scopeId = _analysis.Scopes[_scopeId.Value];
+        _scopeId = _semanticAnalysis.Scopes[_scopeId.Value];
     }
     public void Visit(IfStatement ifStatement)
     {
@@ -245,39 +241,30 @@ public class Compiler : IVisitor
         Emit(OpCode.GetLocal, [new(symbol.Name)]);
     }
 
-    private TestSymbol FindVariableInScope(string identifier)
+    private Symbol FindVariableInScope(string identifier)
     {
         Guid? scopeLevel = _scopeId;
         while (scopeLevel != null)
         {
-            var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == identifier && t.ScopeId == scopeLevel);
+            var symbol = _semanticAnalysis.SymbolTable.Symbols.FirstOrDefault(t => t.Name == identifier && t.ScopeId == scopeLevel);
             if (symbol != null)
             {
                 return symbol;
             }
 
-            scopeLevel = _analysis.Scopes[scopeLevel.Value];
+            scopeLevel = _semanticAnalysis.Scopes[scopeLevel.Value];
         }
 
         throw new();
     }
-
-    private TestSymbol? FindVariableInScope(string name, TestScope scope)
+    
+    private Symbol? FindVariableInFunctionScope(string functionName, string name)
     {
-        var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.TestScope == scope);
-        if (symbol != null)
-        {
-            return symbol;
-        }
-        return null;
-    }
-    private TestSymbol? FindVariableInFunctionScope(string functionName, string name)
-    {
-        var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == functionName && t.TestScope == TestScope.Function);
+        var symbol = _semanticAnalysis.SymbolTable.Symbols.FirstOrDefault(t => t.Name == functionName && t.SymbolScope == SymbolScope.Function);
         if (symbol != null)
         {
             var scope = symbol.ScopeId;
-            symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.ScopeId == scope);
+            symbol = _semanticAnalysis.SymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.ScopeId == scope);
 
             return symbol;
         }
@@ -335,8 +322,6 @@ public class Compiler : IVisitor
         var pointer = Emit(OpCode.LoopBegin, [new(0)]);
         Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(0)))]);
         var startPosition = Instructions.Count - 1;
-        _scope.SymbolTable.Define("it");
-        _scope.SymbolTable.Define("index");
         Emit(OpCode.SetLocal, [new("index")]);
         iterateOver.Body.Accept(this);
         Emit(OpCode.Increment, [new("index")]);

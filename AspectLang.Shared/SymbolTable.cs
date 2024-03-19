@@ -2,31 +2,37 @@ namespace AspectLang.Shared;
 
 public class SymbolTable
 {
-    private readonly Dictionary<string, Symbol> _store = new();
+    public List<Symbol> Symbols { get; set; } = [];
     
-    public Symbol Define(string s)
+    public Symbol Define(string name, Guid scopeId, SymbolScope symbolScope)
     {
-        if (Exists(s))
-        {
-            var symbol = Resolve(s);
-            _store[s] = symbol;
-            return symbol;
-        }
-        var newSymbol = new Symbol(s, _store.Count);
-        _store[s] = newSymbol;
-        return newSymbol;
+        return Define(name, scopeId, symbolScope, null);
     }
-    public Symbol Resolve(string identifierName)
+    
+    public Symbol Define(string name, Guid scopeId, SymbolScope symbolScope, Guid? parentScopeId)
     {
-        if (!Exists(identifierName))
+        var symbol = new Symbol
         {
-            throw new Exception("Can't find symbol");
+            Name = name,
+            SymbolScope = symbolScope,
+            ScopeId = scopeId,
+            ParentScopeId = parentScopeId
+        };
+        Symbols.Add(symbol);
+        return symbol;
+    }
+    public Symbol? Resolve(string identifier, Guid scopeId)
+    {
+        if (!Exists(identifier, scopeId))
+        {
+            return null;
         }
-        return _store[identifierName];
+
+        return Symbols.First(t => t.Name == identifier && t.ScopeId == scopeId);
     }
 
-    public bool Exists(string identifier)
+    public bool Exists(string identifier, Guid scopeId)
     {
-        return _store.ContainsKey(identifier);
+        return Symbols.FirstOrDefault(t => t.Name == identifier && t.ScopeId == scopeId) != null;
     }
 }

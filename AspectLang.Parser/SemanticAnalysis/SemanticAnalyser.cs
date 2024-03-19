@@ -2,65 +2,18 @@ using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Ast.Statements;
 using AspectLang.Parser.Compiler;
+using AspectLang.Shared;
 
 namespace AspectLang.Parser.SemanticAnalysis;
 
-public enum TestScope
+public class SemanticAnalyser : IVisitor
 {
-    Function,
-    Local
-}
-
-public class TestSymbol
-{
-    public string Name { get; set; }
-    public TestScope TestScope { get; set; }
-    public int ScopeLevel { get; set; }
-    public Guid ScopeId { get; set; }
-    public Guid? ParentScopeId { get; set; }
-}
-public class TestSymbolTable
-{
-    public List<TestSymbol> Symbols { get; set; } = [];
-}
-
-public class Analysis
-{
-    public Dictionary<Guid, Guid?> Scopes { get; set; }
-    public TestSymbolTable TestSymbolTable { get; set; }
-    public List<Guid> EnterScopes { get; set; }
-}
-public class AnalyserResult
-{
-    public Analysis Analysis { get; set; }
-    public ParserError Error { get; set; }
-    
-    public ProgramNode ProgramNode { get; } = new();
-    public List<ParserError> Errors { get; } = [];
-
-    public AnalyserResult()
-    {
-        
-    }
-    public AnalyserResult(Analysis analysis)
-    {
-        Analysis = analysis;
-    }
-    
-    public AnalyserResult(ParserError parserError)
-    {
-        Errors.Add(parserError);
-    }
-}
-public class Analyser : IVisitor
-{
-    private TestSymbolTable _testSymbolTable = new();
-    private int _scopeCount;
+    private SymbolTable _symbolTable = new();
     private Guid _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
-    private List<Guid> _enterScopes = [];
+    private readonly List<Guid> _enterScopes = [];
     private Dictionary<Guid, Guid?> _scopes { get; set; } = [];
-    private List<FunctionCall> _functionCalls = [];
-    private List<FunctionDeclarationStatement> _functions = [];
+    private readonly List<FunctionCall> _functionCalls = [];
+    private readonly List<FunctionDeclarationStatement> _functions = [];
     public AnalyserResult Analyse(INode node)
     {
         try
@@ -69,9 +22,9 @@ public class Analyser : IVisitor
             node.Accept(this);
             AnalyseFunctionDeclarations();
             AnalyseFunctionCalls();
-            var res = new Analysis()
+            var res = new SemanticAnalysis()
             {
-                TestSymbolTable = _testSymbolTable,
+                SymbolTable = _symbolTable,
                 EnterScopes = _enterScopes,
                 Scopes = _scopes
             };
@@ -91,25 +44,12 @@ public class Analyser : IVisitor
             _scopeId = Guid.NewGuid();
             _scopes.Add(_scopeId, null);
             var scopesCount = _enterScopes.Count;
-            _testSymbolTable.Symbols.Add(new()
+            _symbolTable.Define(functionDeclaration.Name, _scopeId, SymbolScope.Function);
+
+            foreach (var parameter in functionDeclaration.Parameters)
             {
-                Name = functionDeclaration.Name,
-                ScopeLevel = _scopeCount,
-                TestScope = TestScope.Function,
-                ScopeId = _scopeId,
-                ParentScopeId = null
-            });
-            foreach (var parameters in functionDeclaration.Parameters)
-            {
-                _testSymbolTable.Symbols.Add(new()
-                {
-                    Name = parameters.Name,
-                    ScopeLevel = _scopeCount,
-                    TestScope = TestScope.Local,
-                    ScopeId = _scopeId,
-                    ParentScopeId = null
-                });
-                parameters.Accept(this);
+                _symbolTable.Define(parameter.Name, _scopeId, SymbolScope.Local);
+                parameter.Accept(this);
             }
 
             functionDeclaration.Body.Accept(this);
@@ -124,14 +64,11 @@ public class Analyser : IVisitor
     {
         foreach (var functionCall in _functionCalls)
         {
-           var symbol = FindSymbol(functionCall.Name, TestScope.Function);
+           var symbol = FindSymbol(functionCall.Name, SymbolScope.Function);
            if (symbol == null)
            {
                throw new ("Function not found or something");
            }
-
-           //var func = _functions.FirstOrDefault(t => t.Name == functionCall.Name);
-           
         }
     }
     public void Visit(IntegerExpression expression)
@@ -195,13 +132,8 @@ public class Analyser : IVisitor
     public void Visit(VariableAssignmentNode variableAssignment)
     {
         variableAssignment.Expression.Accept(this);
-        var exists = false;
         var symbol = FindSymbol(variableAssignment.VariableDeclarationNode.Name);
         if (symbol != null)
-        {
-            exists = true;
-        }
-        if (exists)
         {
             if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
             {
@@ -214,14 +146,8 @@ public class Analyser : IVisitor
         {
             if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
             {
-                _testSymbolTable.Symbols.Add(new()
-                {
-                    Name = variableAssignment.VariableDeclarationNode.Name,
-                    ScopeLevel = _scopeCount,
-                    TestScope = TestScope.Local,
-                    ScopeId = _scopeId,
-                    ParentScopeId = _scopes.ContainsKey(_scopeId) ? _scopes[_scopeId] : null
-                });
+                var parentScope = _scopes.TryGetValue(_scopeId, out var scope) ? scope : null;
+                _symbolTable.Define(variableAssignment.VariableDeclarationNode.Name, _scopeId, SymbolScope.Local, parentScope);
             }
             else
             {
@@ -234,7 +160,6 @@ public class Analyser : IVisitor
 
     public void Visit(Identifier identifier)
     {
-        var exists = false;
         var symbol = FindSymbol(identifier.Name);
 
         if (symbol == null)
@@ -281,22 +206,8 @@ public class Analyser : IVisitor
     public void Visit(IterateOverStatement iterateOver)
     {
         iterateOver.Identifier.Accept(this);
-        _testSymbolTable.Symbols.Add(new()
-        {
-            Name = "it",
-            ScopeLevel = _scopeCount,
-            TestScope = TestScope.Local,
-            ScopeId = _scopeId,
-            ParentScopeId = _scopes.ContainsKey(_scopeId) ? _scopes[_scopeId] : null
-        });
-        _testSymbolTable.Symbols.Add(new()
-        {
-            Name = "index",
-            ScopeLevel = _scopeCount,
-            TestScope = TestScope.Local,
-            ScopeId = _scopeId,
-            ParentScopeId = _scopes.ContainsKey(_scopeId) ? _scopes[_scopeId] : null
-        });
+        _symbolTable.Define("it", _scopeId, SymbolScope.Local, _scopes.GetValueOrDefault(_scopeId));
+        _symbolTable.Define("index", _scopeId, SymbolScope.Local, _scopes.GetValueOrDefault(_scopeId));
         iterateOver.Body.Accept(this);
     }
 
@@ -306,22 +217,20 @@ public class Analyser : IVisitor
         _enterScopes.Add(scopeId);
         _scopes.Add(scopeId, _scopeId);
         _scopeId = scopeId;
-        _scopeCount++;
     }
 
     private void ExitScope()
     {
         var scope = _scopes[_scopeId];
         _scopeId = scope.Value;
-        _scopeCount--;
     }
 
-    private TestSymbol? FindSymbol(string name)
+    private Symbol? FindSymbol(string name)
     {
         Guid? scopeLevel = _scopeId;
         while (scopeLevel != null)
         {
-            var symbol = _testSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.ScopeId == scopeLevel);
+            var symbol = _symbolTable.Resolve(name, scopeLevel.Value);
             if (symbol != null)
             {
                 return symbol;
@@ -333,9 +242,9 @@ public class Analyser : IVisitor
         return null;
     }
     
-    private TestSymbol? FindSymbol(string name, TestScope scope)
+    private Symbol? FindSymbol(string name, SymbolScope scope)
     {
-        var symbol = _testSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.TestScope == scope);
+        var symbol = _symbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.SymbolScope == scope);
         if (symbol != null)
         {
             return symbol;

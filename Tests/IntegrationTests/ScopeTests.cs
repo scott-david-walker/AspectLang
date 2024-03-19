@@ -24,7 +24,7 @@ public class ScopeTests : TestBase
         var lexer = new Lexer("if(1 == 1) { x = 1; return x; }");
         var parser = new Parser(lexer);
         var parseResult = parser.Parse();
-        var result = new Analyser().Analyse(parseResult.ProgramNode);
+        var result = new SemanticAnalyser().Analyse(parseResult.ProgramNode);
         result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x does not exist");
     }
     
@@ -34,7 +34,7 @@ public class ScopeTests : TestBase
         var lexer = new Lexer("if(2 == 1) { val x = 1; return x; } else { return x; }");
         var parser = new Parser(lexer);
         var parseResult = parser.Parse();
-        var result = new Analyser().Analyse(parseResult.ProgramNode);
+        var result = new SemanticAnalyser().Analyse(parseResult.ProgramNode);
         result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x does not exist");
     }
 
