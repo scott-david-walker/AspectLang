@@ -133,7 +133,7 @@ internal class EndLoopOperation : IOperation
         {
             throw new ("Expected a boolean object");
         }
-        if (!boolObj.Value)
+        if (boolObj.Value)
         {
             vm.InstructionPointer = operands[0].Reference.Value;
         }
@@ -145,6 +145,22 @@ internal class CompareOperation : IOperation
     // Maybe this should just output a bool about whether to iterate again?
     public void Execute(Vm vm, List<Operand> operands)
     {
+        if (operands.Count == 0)
+        {
+            var obj = vm.Pop();
+            if (obj is BooleanReturnableObject boolean)
+            {
+                if (boolean.Value)
+                {
+                    vm.Push(new BooleanReturnableObject(true));
+                }
+                else
+                {
+                    vm.Push(new BooleanReturnableObject(false));
+                }
+            }
+            return;
+        }
         var indexVariable = operands[0].Name;
         var compareTo = operands[1].Name;
         vm.GetLocal(indexVariable!);
@@ -163,11 +179,11 @@ internal class CompareOperation : IOperation
         if (indexInt.Value < arrayReturnableObject.Elements.Count)
         {
             vm.SetLocal(arrayReturnableObject.Elements[indexInt.Value], "it");
-            vm.Push(new BooleanReturnableObject(true));
+            vm.Push(new BooleanReturnableObject(false));
         }
         else
         {
-            vm.Push(new BooleanReturnableObject(false));
+            vm.Push(new BooleanReturnableObject(true));
         }
     }
 }

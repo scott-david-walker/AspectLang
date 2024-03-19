@@ -29,9 +29,7 @@ public enum OpCode : byte
     GreaterThanEqualTo,
     Array,
     Index,
-    LoopBegin,
     Increment,
     Compare,
     EndLoop,
-    Initialise
 }

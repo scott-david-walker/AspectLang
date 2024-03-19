@@ -1,6 +1,6 @@
 namespace ParserTests.IntegrationTests;
 
-public class LoopTests : TestBase
+public class IterateOverTests : TestBase
 {
     [Fact]
     public void CanLoopOverArrayAndReturnValue()
@@ -114,4 +114,6 @@ public class LoopTests : TestBase
             return g;");
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(0);
     }
+    
+
 }

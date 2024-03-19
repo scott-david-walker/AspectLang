@@ -335,13 +335,13 @@ public class Compiler : IVisitor
 
     public void Visit(IterateUntilStatement iterateUntil)
     {
-        iterateUntil.Condition.Accept(this);
-        var pointer = Emit(OpCode.LoopBegin, [new(0)]);
         var startPosition = Instructions.Count - 1;
+        iterateUntil.Condition.Accept(this);
+        Emit(OpCode.Compare, []);
+        var pointer = Emit(OpCode.EndLoop, [new(0)]); 
         iterateUntil.Body.Accept(this);
-        var endLoop = Instructions.Count + 1;
-        Emit(OpCode.EndLoop, [new(endLoop)]);
         Emit(OpCode.Jump, [new(startPosition)]);
+        var endLoop = Instructions.Count - 1;
         UpdateInstruction(pointer, endLoop);
     }
 
