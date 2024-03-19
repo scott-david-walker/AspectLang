@@ -1,3 +1,5 @@
+using AspectLang.Parser.SemanticAnalysis;
+
 namespace ParserTests;
 
 public class SemanticAnalysisTests
@@ -7,8 +9,8 @@ public class SemanticAnalysisTests
     {
         var lexer = new Lexer("x = 5;"); 
         var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x does not exist");
+        var parseResult = parser.Parse();
+        var result = new Analyser().Analyse(parseResult.ProgramNode);        result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x does not exist");
     }
     
     [Fact]
@@ -16,7 +18,8 @@ public class SemanticAnalysisTests
     {
         var lexer = new Lexer("val x = 5; val x = 10;"); 
         var parser = new Parser(lexer);
-        var result = parser.Parse();
+        var parseResult = parser.Parse();
+        var result = new Analyser().Analyse(parseResult.ProgramNode);
         result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x already exists");
     }
     
@@ -25,8 +28,8 @@ public class SemanticAnalysisTests
     {
         var lexer = new Lexer("val x = 5; if(5 == 5) { x = 10; }"); 
         var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().BeEmpty();
+        var parseResult = parser.Parse();
+        var result = new Analyser().Analyse(parseResult.ProgramNode);        result.Errors.Should().BeEmpty();
     }
     
     [Fact]
@@ -39,7 +42,7 @@ public class SemanticAnalysisTests
             }
         "); 
         var parser = new Parser(lexer);
-        var result = parser.Parse();
-        result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x already exists");
+        var parseResult = parser.Parse();
+        var result = new Analyser().Analyse(parseResult.ProgramNode);        result.Errors.Should().ContainSingle().Which.Message.Should().Be("Variable with name x already exists");
     }
 }

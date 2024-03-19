@@ -31,7 +31,7 @@ public abstract class TestBase
         var result = Parse(source);
         var analyser = new Analyser().Analyse(result.ProgramNode);
         var compiler = new Compiler();
-        compiler.Compile(result.ProgramNode, analyser);
+        compiler.Compile(result.ProgramNode, analyser.Analysis);
         var vm = new Vm(compiler.Instructions, compiler.Constants);
         return vm.Run();
     }

@@ -43,6 +43,9 @@ public class Compiler : IVisitor
     {
         _analysis = analyse;
         resultProgramNode.Accept(this);
+        Emit(OpCode.Halt);
+        CompileFunctions();
+        UpdateCalls();
     }
 
     private void UpdateCalls()
@@ -68,7 +71,6 @@ public class Compiler : IVisitor
     {
         foreach (var function in _functionsDeclarations)
         {
-            EnterScope();
             //Entry point is set to the start of the function. This is safe because functions are compiled on the second pass
             var entryPoint = Instructions.Count - 1;
             // could we change all this so that arguments are a different opcode
@@ -76,10 +78,11 @@ public class Compiler : IVisitor
             //double for each because we only want to do a GETLOCAL after the arguments are set
             foreach (var param in function.Parameters)
             {
-                var symbol = _scope.SymbolTable.Define(param.Name);
+                var symbol = FindVariableInFunctionScope(function.Name, param.Name);
                 
                 Emit(OpCode.SetLocal, [new(symbol.Name)]);
             }
+            _scopeId = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == function.Name && t.TestScope == TestScope.Function).ScopeId;
             foreach (var param in function.Parameters)
             {
                 param.Accept(this);
@@ -259,6 +262,28 @@ public class Compiler : IVisitor
         throw new();
     }
 
+    private TestSymbol? FindVariableInScope(string name, TestScope scope)
+    {
+        var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.TestScope == scope);
+        if (symbol != null)
+        {
+            return symbol;
+        }
+        return null;
+    }
+    private TestSymbol? FindVariableInFunctionScope(string functionName, string name)
+    {
+        var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == functionName && t.TestScope == TestScope.Function);
+        if (symbol != null)
+        {
+            var scope = symbol.ScopeId;
+            symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.ScopeId == scope);
+
+            return symbol;
+        }
+        return null;
+    }
+    
     public void Visit(ReturnStatement returnStatement)
     {
         returnStatement.Value.Accept(this);

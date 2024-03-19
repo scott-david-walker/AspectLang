@@ -9,6 +9,9 @@ public class FunctionDeclarationStatement : IStatement
     public string Name { get; set; }
     public List<Identifier> Parameters = [];
     public BlockStatement Body { get; set; }
+    
+    public int EntryScope { get; set; }
+    public int ExitScope { get; set; }
     public void Accept(IVisitor visitor)
     {
         visitor.Visit(this);
