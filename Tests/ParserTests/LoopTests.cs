@@ -28,4 +28,16 @@ public class LoopTests : TestBase
         result.Errors.Should().ContainSingle().Which.Message.Should()
             .Be("Expected an identifier but received AspectLang.Parser.Ast.ExpressionTypes.InfixExpression");
     }
+    
+    [Fact]
+    public void CanCreateIterateUntilStatement()
+    {
+        var result = Parse(@"
+        iterate until 1 == 1 {
+            val g = 1; // irrelevant for test but empty block statements are illegal;
+        }");
+
+        result.ProgramNode.StatementNodes.Should().ContainSingle();
+        result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<IterateUntilStatement>();
+    }
 }

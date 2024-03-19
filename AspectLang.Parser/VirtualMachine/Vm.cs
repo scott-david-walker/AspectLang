@@ -130,7 +130,6 @@ internal class EndLoopOperation : IOperation
 {
     public void Execute(Vm vm, List<Operand> operands)
     {
-        var index = vm.Pop();
         var condition = vm.Pop();
         if (condition is not BooleanReturnableObject boolObj)
         {
@@ -139,10 +138,6 @@ internal class EndLoopOperation : IOperation
         if (!boolObj.Value)
         {
             vm.InstructionPointer = operands[0].Reference.Value;
-        }
-        else
-        {
-            vm.Push(index);
         }
     }
 }

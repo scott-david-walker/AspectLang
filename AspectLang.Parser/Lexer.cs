@@ -22,6 +22,7 @@ public class Lexer
         { "fn", TokenType.Function },
         { "iterate", TokenType.Iterate },
         { "over", TokenType.Over },
+        { "until", TokenType.Until },
     };
     public Lexer(string source)
     {

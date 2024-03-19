@@ -326,13 +326,25 @@ public class Compiler : IVisitor
         iterateOver.Body.Accept(this);
         Emit(OpCode.Increment, [new("index")]);
         Emit(OpCode.Compare, [new("index"), new(iterateOver.Identifier.Name)]);
+        var endLoop = Instructions.Count + 2;
+        Emit(OpCode.EndLoop, [new(endLoop)]); 
         Emit(OpCode.GetLocal, [new("index")]);
+        Emit(OpCode.Jump, [new(startPosition)]);
+        UpdateInstruction(pointer, endLoop);
+    }
+
+    public void Visit(IterateUntilStatement iterateUntil)
+    {
+        iterateUntil.Condition.Accept(this);
+        var pointer = Emit(OpCode.LoopBegin, [new(0)]);
+        var startPosition = Instructions.Count - 1;
+        iterateUntil.Body.Accept(this);
         var endLoop = Instructions.Count + 1;
         Emit(OpCode.EndLoop, [new(endLoop)]);
         Emit(OpCode.Jump, [new(startPosition)]);
         UpdateInstruction(pointer, endLoop);
     }
-    
+
     private void UpdateInstruction(int position, int location)
     {
         var instruction = Instructions[position];

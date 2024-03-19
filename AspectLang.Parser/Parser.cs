@@ -247,6 +247,22 @@ public class Parser
 
     private IStatement ParseLoop()
     {
+        if (IsNextToken(TokenType.Over))
+        {
+            return ParseIterateOver();
+        }
+
+        var token = _currentToken;
+        AssertNextToken(TokenType.Until);
+        GetNext();
+        var expression = ParseExpression(Priority.Lowest);
+        var block = ParseBlockStatement();
+        
+        return new IterateUntilStatement { Token = token, Condition = expression, Body = block };
+    }
+
+    private IterateOverStatement ParseIterateOver()
+    {
         AssertNextToken(TokenType.Over);
         GetNext();
         var identifierExpression = ParseExpression(Priority.Lowest);
@@ -256,7 +272,7 @@ public class Parser
             throw new ParserException($"Expected an identifier but received {identifierExpression.GetType()}", _currentToken);
         }
         var block = ParseBlockStatement();
-        return new IterateOverStatement
+        return new()
         {
             Identifier = identifier,
             Token = _currentToken,
