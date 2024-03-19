@@ -317,7 +317,6 @@ public class Parser
                 parseResult.ProgramNode.StatementNodes.Add(statement);
                 GetNext();
             }
-            new Analyser().Analyse(parseResult.ProgramNode);
         }
         catch (ParserException ex)
         {
