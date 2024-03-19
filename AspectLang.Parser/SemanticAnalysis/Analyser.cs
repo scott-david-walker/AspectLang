@@ -6,15 +6,49 @@ using AspectLang.Shared;
 
 namespace AspectLang.Parser.SemanticAnalysis;
 
+public enum TestScope
+{
+    Function,
+    Local
+}
+
+public class TestSymbol
+{
+    public string Name { get; set; }
+    public TestScope TestScope { get; set; }
+    public int ScopeLevel { get; set; }
+    public Guid ScopeId { get; set; }
+    public Guid? ParentScopeId { get; set; }
+}
+public class TestSymbolTable
+{
+    public List<TestSymbol> Symbols { get; set; } = [];
+}
+
+public class Analysis
+{
+    public Dictionary<Guid, Guid?> Scopes { get; set; }
+    public TestSymbolTable TestSymbolTable { get; set; }
+    public List<Guid> EnterScopes { get; set; }
+}
 public class Analyser : IVisitor
 {
     private Scope _currentScope = new(null);
-    private int _scopeCount = 0;
-
-    
-    public void Analyse(INode node)
+    private TestSymbolTable _testSymbolTable = new();
+    private int _scopeCount;
+    private Guid _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
+    private List<Guid> _enterScopes = [];
+    private Dictionary<Guid, Guid?> _scopes { get; set; } = [];
+    public Analysis Analyse(INode node)
     {
+        _scopes.Add(_scopeId, null);
         node.Accept(this);
+        return new ()
+        {
+            TestSymbolTable = _testSymbolTable,
+            EnterScopes = _enterScopes,
+            Scopes = _scopes
+        };
     }
     public void Visit(IntegerExpression expression)
     {
@@ -76,18 +110,11 @@ public class Analyser : IVisitor
     {
         variableAssignment.Expression.Accept(this);
         var exists = false;
-        var scope = _currentScope;
-        while (scope != null)
+        var symbol = FindSymbol(variableAssignment.VariableDeclarationNode.Name);
+        if (symbol != null)
         {
-            exists = scope.SymbolTable.Exists(variableAssignment.VariableDeclarationNode.Name);
-            if (exists)
-            {
-                break;
-            }
-
-            scope = scope.Parent;
+            exists = true;
         }
-
         if (exists)
         {
             if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
@@ -96,13 +123,20 @@ public class Analyser : IVisitor
                     $"Variable with name {variableAssignment.VariableDeclarationNode.Name} already exists",
                     variableAssignment.Token);
             }
-            _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
         }
         else
         {
             if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
             {
-                _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
+                _testSymbolTable.Symbols.Add(new()
+                {
+                    Name = variableAssignment.VariableDeclarationNode.Name,
+                    ScopeLevel = _scopeCount,
+                    TestScope = TestScope.Local,
+                    ScopeId = _scopeId,
+                    ParentScopeId = _scopes.ContainsKey(_scopeId) ? _scopes[_scopeId] : null
+                });
+           //     _currentScope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
             }
             else
             {
@@ -116,19 +150,9 @@ public class Analyser : IVisitor
     public void Visit(Identifier identifier)
     {
         var exists = false;
-        var scope = _currentScope;
-        while (scope != null)
-        {
-            exists = scope.SymbolTable.Exists(identifier.Name);
-            if (exists)
-            {
-                break;
-            }
+        var symbol = FindSymbol(identifier.Name);
 
-            scope = scope.Parent;
-        }
-
-        if (!exists)
+        if (symbol == null)
         {
             throw new ParserException(
                 $"Variable with name {identifier.Name} does not exist",
@@ -172,14 +196,34 @@ public class Analyser : IVisitor
 
     private void EnterScope()
     {
-        var scope = new Scope(_currentScope);
+        var scopeId = Guid.NewGuid();
+        _enterScopes.Add(scopeId);
+        _scopes.Add(scopeId, _scopeId);
+        _scopeId = scopeId;
         _scopeCount++;
-        _currentScope = scope;
     }
 
     private void ExitScope()
     {
-        _currentScope = _currentScope.Parent!;
+        var scope = _scopes[_scopeId];
+        _scopeId = scope.Value;
         _scopeCount--;
+    }
+
+    private TestSymbol? FindSymbol(string name)
+    {
+        Guid? scopeLevel = _scopeId;
+        while (scopeLevel != null)
+        {
+            var symbol = _testSymbolTable.Symbols.FirstOrDefault(t => t.Name == name && t.ScopeId == scopeLevel);
+            if (symbol != null)
+            {
+                return symbol;
+            }
+
+            scopeLevel = _scopes[scopeLevel.Value];
+        }
+
+        return null;
     }
 }

@@ -2,6 +2,7 @@ using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Ast.Statements;
 using AspectLang.Parser.Compiler.ReturnableObjects;
+using AspectLang.Parser.SemanticAnalysis;
 using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
@@ -27,7 +28,9 @@ public class Compiler : IVisitor
     private readonly FunctionTable _functionTable = new();
     private readonly FunctionTable _functionCalls = new();
     private readonly List<FunctionDeclarationStatement> _functionsDeclarations = [];
-
+    private Analysis _analysis;
+    private int _scopeCount = 0;
+    private Guid? _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
     public void Compile(INode node)
     {
         node.Accept(this);
@@ -35,6 +38,11 @@ public class Compiler : IVisitor
         CompileFunctions();
         UpdateCalls();
         // Should do a conversion to some byte code format tbd
+    }
+    public void Compile(ProgramNode resultProgramNode, Analysis analyse)
+    {
+        _analysis = analyse;
+        resultProgramNode.Accept(this);
     }
 
     private void UpdateCalls()
@@ -171,10 +179,12 @@ public class Compiler : IVisitor
 
     public void Visit(BlockStatement blockStatement)
     {
+        EnterScope();
         foreach (var statement in blockStatement.Statements)
         {
             statement.Accept(this);
         }
+        ExitScope();
     }
 
     private void EnterScope()
@@ -182,28 +192,27 @@ public class Compiler : IVisitor
         Emit(OpCode.EnterScope);
         var scope = new Scope(_scope);
         _scope = scope;
+        _scopeId = _analysis.EnterScopes[_scopeCount];
+        _scopeCount++;
     }
 
     private void ExitScope()
     {
         _scope = _scope.Parent;
         Emit(OpCode.ExitScope);
+        _scopeId = _analysis.Scopes[_scopeId.Value];
     }
     public void Visit(IfStatement ifStatement)
     {
         ifStatement.Condition.Accept(this);
         var falsePosition = Emit(OpCode.JumpWhenFalse, [new(9999)]);
-        EnterScope();
         ifStatement.Consequence.Accept(this);
-        ExitScope();
         var afterConsequencePosition = Instructions.Count;
         var jumpToEndOfIfInstructionPosition = Emit(OpCode.Jump, [new(9999)]);
         var endPosition = afterConsequencePosition;
         if (ifStatement.Alternative != null)
         {
-            EnterScope();
             ifStatement.Alternative.Accept(this);
-            ExitScope();
             endPosition = Instructions.Count;
             UpdateInstruction(falsePosition, afterConsequencePosition);
         }
@@ -222,15 +231,7 @@ public class Compiler : IVisitor
     public void Visit(VariableAssignmentNode variableAssignment)
     {
         variableAssignment.Expression.Accept(this);
-        Symbol symbol;
-        if (variableAssignment.VariableDeclarationNode.IsFreshDeclaration)
-        {
-            symbol = _scope.SymbolTable.Define(variableAssignment.VariableDeclarationNode.Name);
-        }
-        else
-        {
-            symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
-        }
+        var symbol = FindVariableInScope(variableAssignment.VariableDeclarationNode.Name);
         
         Emit(OpCode.SetLocal, [new(symbol.Name)]);
     }
@@ -241,19 +242,21 @@ public class Compiler : IVisitor
         Emit(OpCode.GetLocal, [new(symbol.Name)]);
     }
 
-    private Symbol FindVariableInScope(string identifier)
+    private TestSymbol FindVariableInScope(string identifier)
     {
-        var scope = _scope;
-        while (scope != null)
+        Guid? scopeLevel = _scopeId;
+        while (scopeLevel != null)
         {
-            if (scope.SymbolTable.Exists(identifier))
+            var symbol = _analysis.TestSymbolTable.Symbols.FirstOrDefault(t => t.Name == identifier && t.ScopeId == scopeLevel);
+            if (symbol != null)
             {
-                break;
+                return symbol;
             }
-            scope = scope.Parent;
+
+            scopeLevel = _analysis.Scopes[scopeLevel.Value];
         }
-        var symbol = scope.SymbolTable.Resolve(identifier);
-        return symbol;
+
+        throw new();
     }
 
     public void Visit(ReturnStatement returnStatement)
@@ -307,7 +310,6 @@ public class Compiler : IVisitor
         var pointer = Emit(OpCode.LoopBegin, [new(0)]);
         Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(0)))]);
         var startPosition = Instructions.Count - 1;
-        EnterScope();
         _scope.SymbolTable.Define("it");
         _scope.SymbolTable.Define("index");
         Emit(OpCode.SetLocal, [new("index")]);
@@ -315,7 +317,6 @@ public class Compiler : IVisitor
         Emit(OpCode.Increment, [new("index")]);
         Emit(OpCode.Compare, [new("index"), new(iterateOver.Identifier.Name)]);
         Emit(OpCode.GetLocal, [new("index")]);
-        ExitScope();
         var endLoop = Instructions.Count + 1;
         Emit(OpCode.EndLoop, [new(endLoop)]);
         Emit(OpCode.Jump, [new(startPosition)]);

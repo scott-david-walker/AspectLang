@@ -7,7 +7,7 @@ using FluentAssertions;
 
 namespace ParserTests.IntegrationTests;
 
-public class FlowTests
+public class FlowTests : TestBase
 {
     [Theory]
     [InlineData("5 + 6", 11)]
@@ -88,13 +88,7 @@ public class FlowTests
     public async Task RunTestFiles(string file, int expectedResult)
     {
         var source = await File.ReadAllTextAsync(file);
-        var lexer = new Lexer(source);
-        var parser = new Parser(lexer);
-        var result = parser.Parse(); 
-        var compiler = new Compiler();
-        compiler.Compile(result.ProgramNode);
-        var vm = new Vm(compiler.Instructions, compiler.Constants);
-        var res = vm.Run();
+        var res = Run(source);
         res.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(expectedResult);
     }
 }

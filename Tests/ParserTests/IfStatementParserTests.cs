@@ -1,6 +1,9 @@
 using AspectLang.Parser.Ast;
 using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Ast.Statements;
+using AspectLang.Parser.Compiler;
+using AspectLang.Parser.SemanticAnalysis;
+using AspectLang.Parser.VirtualMachine;
 
 namespace ParserTests.ParserTests;
 
