@@ -163,5 +163,4 @@ public class IterateOverTests : TestBase
             return g;");
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(0);
     }
-
 }

@@ -38,4 +38,21 @@ public class IterateUntilTests : TestBase
             return x;");
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(2);
     }
+    
+    [Fact]
+    public void CanContinueIteration()
+    {
+        var result = Run(@"
+            val x = 0;
+            val g = 10;
+            iterate until x == 2 {
+                x = x + 1;
+                continue;
+                g = x;
+            }
+            return g;");
+        result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(10);
+    }
+    
+
 }

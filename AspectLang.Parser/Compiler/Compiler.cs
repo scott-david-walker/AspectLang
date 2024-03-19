@@ -362,8 +362,17 @@ public class Compiler : IVisitor
         iterateUntil.Condition.Accept(this);
         Emit(OpCode.Compare, []);
         var pointer = Emit(OpCode.EndLoop, [new(0)]); 
+        var loop = new Loop { ConditionPointer = startPosition + 1 };
+        _loopStack.Push(loop);
         iterateUntil.Body.Accept(this);
-        Emit(OpCode.Jump, [new(startPosition)]);
+        var jumpPointer = Emit(OpCode.Jump, [new(startPosition)]);
+        if (loop.InstructionToUpdate != null)
+        {
+            loop.EndPointer = jumpPointer - 2; // exit scope as well
+            UpdateInstruction(loop.InstructionToUpdate.Value, jumpPointer - 2);
+        }
+        _loopStack.Pop();
+        
         var endLoop = Instructions.Count - 1;
         UpdateInstruction(pointer, endLoop);
     }
