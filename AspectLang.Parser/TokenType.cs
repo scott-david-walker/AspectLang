@@ -37,5 +37,6 @@ public enum TokenType
     GreaterThanEqualTo,
     Iterate,
     Over,
-    Until
+    Until,
+    Continue
 }

@@ -68,6 +68,7 @@ public class LexerTests
     [InlineData("iterate", TokenType.Iterate)]
     [InlineData("over", TokenType.Over)]
     [InlineData("until", TokenType.Until)]
+    [InlineData("continue", TokenType.Continue)]
     public void ShouldReturnCorrectIdentifier(string source, TokenType tokenType)
     {
         var lexer = new Lexer(source);

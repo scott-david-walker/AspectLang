@@ -217,6 +217,11 @@ public class SemanticAnalyser : IVisitor
         iterateUntil.Body.Accept(this);
     }
 
+    public void Visit(ContinueStatement continueStatement)
+    {
+        
+    }
+
     private void EnterScope()
     {
         var scopeId = Guid.NewGuid();

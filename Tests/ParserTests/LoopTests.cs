@@ -40,4 +40,18 @@ public class LoopTests : TestBase
         result.ProgramNode.StatementNodes.Should().ContainSingle();
         result.ProgramNode.StatementNodes[0].Should().BeAssignableTo<IterateUntilStatement>();
     }
+    
+    [Fact]
+    public void CanContinue()
+    {
+        var result = Parse(@"
+        val x = [1,2,3]; 
+        iterate over x {
+            continue;
+        }");
+        result.ProgramNode.StatementNodes.Should().HaveCount(2);
+        result.ProgramNode.StatementNodes[1].Should().BeAssignableTo<IterateOverStatement>();
+        var iterate = result.ProgramNode.StatementNodes[1] as IterateOverStatement;
+        iterate.Body.Statements.First().Should().BeAssignableTo<ContinueStatement>();
+    }
 }

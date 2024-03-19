@@ -240,6 +240,8 @@ public class Parser
                 return ParseFunction();
             case TokenType.Iterate:
                 return ParseLoop();
+            case TokenType.Continue:
+                return new ContinueStatement() { Token = _currentToken };
         }
 
         return ParseExpressionStatement();

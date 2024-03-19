@@ -7,6 +7,12 @@ using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
 
+public class Loop
+{
+    public int ConditionPointer { get; set; }
+    public int EndPointer { get; set; }
+    public int? InstructionToUpdate { get; set; }
+}
 public class FunctionTable
 {
     public List<Function> Functions { get; set; } = [];
@@ -30,6 +36,8 @@ public class Compiler : IVisitor
     private SemanticAnalysis.SemanticAnalysis _semanticAnalysis;
     private int _scopeCount = 0;
     private Guid? _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
+    private Stack<Loop> _loopStack = new();
+
     public void Compile(INode node)
     {
         node.Accept(this);
@@ -324,9 +332,24 @@ public class Compiler : IVisitor
         Emit(OpCode.Constant, [new(AddConstant(new IntegerReturnableObject(0)))]);
         Emit(OpCode.SetLocal, [new("it")]);
         Emit(OpCode.Compare, [new("index"), new(iterateOver.Identifier.Name)]);
+        // var pointer = Emit(OpCode.EndLoop, [new(0)]); 
+        // iterateOver.Body.Accept(this);
+        // Emit(OpCode.Increment, [new("index")]);
+        
+        
         var pointer = Emit(OpCode.EndLoop, [new(0)]); 
+        var loop = new Loop { ConditionPointer = startPosition + 1 };
+        _loopStack.Push(loop);
         iterateOver.Body.Accept(this);
-        Emit(OpCode.Increment, [new("index")]);
+        var incrementPointer = Emit(OpCode.Increment, [new("index")]);
+        if (loop.InstructionToUpdate != null)
+        {
+            loop.EndPointer = incrementPointer - 2; // exit scope as well
+            UpdateInstruction(loop.InstructionToUpdate.Value, incrementPointer - 2);
+        }
+
+        _loopStack.Pop();
+        
         Emit(OpCode.GetLocal, [new("index")]);
         Emit(OpCode.Jump, [new(startPosition)]);
         var endLoop = Instructions.Count - 1;
@@ -343,6 +366,14 @@ public class Compiler : IVisitor
         Emit(OpCode.Jump, [new(startPosition)]);
         var endLoop = Instructions.Count - 1;
         UpdateInstruction(pointer, endLoop);
+    }
+
+    public void Visit(ContinueStatement continueStatement)
+    {
+        var instruction = Emit(OpCode.Jump, [new(0)]);
+        var loop = _loopStack.Pop();
+        loop.InstructionToUpdate = instruction;
+        _loopStack.Push(loop);
     }
 
     private void UpdateInstruction(int position, int location)

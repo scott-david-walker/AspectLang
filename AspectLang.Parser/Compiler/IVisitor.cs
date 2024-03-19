@@ -25,4 +25,5 @@ public interface IVisitor
     void Visit(IndexExpression indexExpression);
     void Visit(IterateOverStatement iterateOver);
     void Visit(IterateUntilStatement iterateUntil);
+    void Visit(ContinueStatement continueStatement);
 }

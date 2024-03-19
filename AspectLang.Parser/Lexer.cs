@@ -23,6 +23,7 @@ public class Lexer
         { "iterate", TokenType.Iterate },
         { "over", TokenType.Over },
         { "until", TokenType.Until },
+        { "continue", TokenType.Continue },
     };
     public Lexer(string source)
     {
