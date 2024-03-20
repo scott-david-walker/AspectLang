@@ -3,7 +3,7 @@ using AspectLang.Parser.Compiler;
 
 namespace AspectLang.Parser.Ast.Statements;
 
-public class IterateOverStatement : IStatement
+public class IterateOverStatement : IStatement, ILoop
 {
     public Token Token { get; set; }
     public Identifier Identifier { get; set; }

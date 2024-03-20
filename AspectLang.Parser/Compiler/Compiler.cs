@@ -3,17 +3,9 @@ using AspectLang.Parser.Ast.ExpressionTypes;
 using AspectLang.Parser.Ast.Statements;
 using AspectLang.Parser.Compiler.ReturnableObjects;
 using AspectLang.Parser.Compiler.Visitors;
-using AspectLang.Parser.SemanticAnalysis;
 using AspectLang.Shared;
 
 namespace AspectLang.Parser.Compiler;
-
-public class Loop
-{
-    public int ConditionPointer { get; set; }
-    public int EndPointer { get; set; }
-    public int? InstructionToUpdate { get; set; }
-}
 public class FunctionTable
 {
     public List<Function> Functions { get; set; } = [];
@@ -35,9 +27,14 @@ public class Compiler : IVisitor
     private readonly FunctionTable _functionCalls = new();
     private readonly List<FunctionDeclarationStatement> _functionsDeclarations = [];
     private SemanticAnalysis.SemanticAnalysis _semanticAnalysis;
-    private int _scopeCount = 0;
+    private int _scopeCount;
     private Guid? _scopeId = Guid.Parse("2d54b924-5671-408a-8e3d-8d7a25b2043a");
-    private readonly ILoopVisitor _loopVisitor = new LoopVisitor();
+    private readonly ILoopVisitor _loopVisitor;
+
+    public Compiler()
+    {
+        _loopVisitor = new LoopVisitor(this);
+    }
     public void Compile(INode node)
     {
         node.Accept(this);
@@ -46,10 +43,10 @@ public class Compiler : IVisitor
         UpdateCalls();
         // Should do a conversion to some byte code format tbd
     }
-    public void Compile(ProgramNode resultProgramNode, SemanticAnalysis.SemanticAnalysis analyse)
+    public void Compile(ProgramNode programNode, SemanticAnalysis.SemanticAnalysis analyse)
     {
         _semanticAnalysis = analyse;
-        resultProgramNode.Accept(this);
+        programNode.Accept(this);
         Emit(OpCode.Halt);
         CompileFunctions();
         UpdateCalls();
@@ -326,28 +323,22 @@ public class Compiler : IVisitor
 
     public void Visit(IterateOverStatement iterateOver)
     {
-        _loopVisitor.Visit(iterateOver, this);
+        _loopVisitor.Visit(iterateOver);
     }
 
     public void Visit(IterateUntilStatement iterateUntil)
     {
-        _loopVisitor.Visit(iterateUntil, this);
+        _loopVisitor.Visit(iterateUntil);
     }
 
     public void Visit(ContinueStatement continueStatement)
     {
-        var instruction = Emit(OpCode.Jump, [new(0)]);
-        var loop = _loopVisitor.PopLoop();
-        loop.InstructionToUpdate = instruction;
-        _loopVisitor.PushLoop(loop);
+        _loopVisitor.Visit(continueStatement);
     }
 
     public void Visit(BreakStatement breakStatement)
     {
-        var instruction = Emit(OpCode.Jump, [new(0)]);
-        var loop = _loopVisitor.PopLoop();
-        loop.InstructionToUpdate = instruction;
-        _loopVisitor.PushLoop(loop);
+        _loopVisitor.Visit(breakStatement);
     }
 
     public void UpdateInstruction(int position, int location)
@@ -367,7 +358,13 @@ public class Compiler : IVisitor
         var position = AddInstructions(instruction);
         return position;
     }
-
+    
+    public int AddConstant(IReturnableObject obj)
+    {
+        Constants.Add(obj);
+        return Constants.Count - 1;
+    }
+    
     private static Instruction CreateInstruction(OpCode opCode, List<Operand> operands)
     {
         if (!operands.Any())
@@ -387,11 +384,5 @@ public class Compiler : IVisitor
         var pos = Instructions.Count;
         Instructions.Add(instruction);
         return pos;
-    }
-
-    public int AddConstant(IReturnableObject obj)
-    {
-        Constants.Add(obj);
-        return Constants.Count - 1;
     }
 }
