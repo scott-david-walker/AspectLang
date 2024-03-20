@@ -26,4 +26,5 @@ public interface IVisitor
     void Visit(IterateOverStatement iterateOver);
     void Visit(IterateUntilStatement iterateUntil);
     void Visit(ContinueStatement continueStatement);
+    void Visit(BreakStatement breakStatement);
 }

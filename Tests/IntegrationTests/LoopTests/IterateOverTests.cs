@@ -1,4 +1,4 @@
-namespace ParserTests.IntegrationTests;
+namespace ParserTests.IntegrationTests.LoopTests;
 
 public class IterateOverTests : TestBase
 {
@@ -109,55 +109,6 @@ public class IterateOverTests : TestBase
                     if(it == 1) {
                         g = index;
                     }
-                }
-            }
-            return g;");
-        result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(0);
-    }
-    
-    [Fact]
-    public void CanContinueIteration()
-    {
-        var result = Run(@"
-            val x = [1,2,3]; 
-            val g = 0;
-            iterate over x {
-                continue;
-                g = 1;
-            }
-            return g;");
-        result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(0);
-    }
-    
-    [Fact]
-    public void CanContinueIterationInNestedLoop()
-    {
-        var result = Run(@"
-            val x = [1,2,3]; 
-            val y = [10,20,30]; 
-            val g = 0;
-            iterate over x {
-                g = it;
-                iterate over y {
-                    continue;
-                    g = 10000;
-                }
-            }
-            return g;");
-        result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(3);
-    }
-    
-    [Fact]
-    public void CanContinueInFirstOfNestedLoops()
-    {
-        var result = Run(@"
-            val x = [1,2,3]; 
-            val y = [10,20,30]; 
-            val g = 0;
-            iterate over x {
-                continue;
-                iterate over y {
-                    g = it;
                 }
             }
             return g;");

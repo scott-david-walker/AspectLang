@@ -1,4 +1,4 @@
-namespace ParserTests.IntegrationTests;
+namespace ParserTests.IntegrationTests.LoopTests;
 
 public class IterateUntilTests : TestBase
 {
@@ -53,6 +53,4 @@ public class IterateUntilTests : TestBase
             return g;");
         result.Should().BeAssignableTo<IntegerReturnableObject>().Which.Value.Should().Be(10);
     }
-    
-
 }

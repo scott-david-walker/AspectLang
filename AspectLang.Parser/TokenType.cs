@@ -6,7 +6,6 @@ public enum TokenType
     Identifier,
     Assignment,
     Val,
-    EndOfLine,
     EndOfFile,
     Integer,
     SemiColon,
@@ -38,5 +37,6 @@ public enum TokenType
     Iterate,
     Over,
     Until,
-    Continue
+    Continue,
+    Break
 }

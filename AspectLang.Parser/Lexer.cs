@@ -24,6 +24,7 @@ public class Lexer
         { "over", TokenType.Over },
         { "until", TokenType.Until },
         { "continue", TokenType.Continue },
+        { "break", TokenType.Break }
     };
     public Lexer(string source)
     {

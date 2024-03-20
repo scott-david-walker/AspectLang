@@ -241,7 +241,9 @@ public class Parser
             case TokenType.Iterate:
                 return ParseLoop();
             case TokenType.Continue:
-                return new ContinueStatement() { Token = _currentToken };
+                return new ContinueStatement { Token = _currentToken };
+            case TokenType.Break:
+                return new BreakStatement { Token = _currentToken };
         }
 
         return ParseExpressionStatement();

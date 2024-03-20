@@ -42,7 +42,7 @@ public class LoopTests : TestBase
     }
     
     [Fact]
-    public void CanContinue()
+    public void Continue()
     {
         var result = Parse(@"
         val x = [1,2,3]; 
@@ -53,5 +53,19 @@ public class LoopTests : TestBase
         result.ProgramNode.StatementNodes[1].Should().BeAssignableTo<IterateOverStatement>();
         var iterate = result.ProgramNode.StatementNodes[1] as IterateOverStatement;
         iterate.Body.Statements.First().Should().BeAssignableTo<ContinueStatement>();
+    }
+    
+    [Fact]
+    public void Break()
+    {
+        var result = Parse(@"
+        val x = [1,2,3]; 
+        iterate over x {
+            break;
+        }");
+        result.ProgramNode.StatementNodes.Should().HaveCount(2);
+        result.ProgramNode.StatementNodes[1].Should().BeAssignableTo<IterateOverStatement>();
+        var iterate = result.ProgramNode.StatementNodes[1] as IterateOverStatement;
+        iterate.Body.Statements.First().Should().BeAssignableTo<BreakStatement>();
     }
 }

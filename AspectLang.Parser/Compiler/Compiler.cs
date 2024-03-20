@@ -385,6 +385,14 @@ public class Compiler : IVisitor
         _loopStack.Push(loop);
     }
 
+    public void Visit(BreakStatement breakStatement)
+    {
+        var instruction = Emit(OpCode.Jump, [new(0)]);
+        var loop = _loopStack.Pop();
+        loop.InstructionToUpdate = instruction;
+        _loopStack.Push(loop);
+    }
+
     private void UpdateInstruction(int position, int location)
     {
         var instruction = Instructions[position];

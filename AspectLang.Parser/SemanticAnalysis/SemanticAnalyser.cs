@@ -222,6 +222,11 @@ public class SemanticAnalyser : IVisitor
         
     }
 
+    public void Visit(BreakStatement breakStatement)
+    {
+        
+    }
+
     private void EnterScope()
     {
         var scopeId = Guid.NewGuid();
