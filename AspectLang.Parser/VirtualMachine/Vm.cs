@@ -34,7 +34,6 @@ public class Vm
         { OpCode.EnterScope, new EnterScopeOperation() },
         { OpCode.ExitScope, new ExitScopeOperation() },
         { OpCode.SetLocal, new SetLocalOperation() },
-        { OpCode.SetLocalArgument, new SetLocalArgumentOperation() },
         { OpCode.GetLocal, new GetLocalOperation() },
         { OpCode.JumpToFunction, new JumpToFunctionOperation() },
         { OpCode.Array, new ArrayOperation() },

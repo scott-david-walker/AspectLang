@@ -22,7 +22,6 @@ public enum OpCode : byte
     GetLocal,
     JumpToFunction,
     Halt,
-    SetLocalArgument,
     LessThan,
     LessThanEqualTo,
     GreaterThan,
